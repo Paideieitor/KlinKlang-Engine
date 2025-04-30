@@ -1,0 +1,253 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="KlinKlang">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="KlinKlang\GUI">
+      <UniqueIdentifier>{03cbdae1-10f7-47c2-bc8e-9b17f24d2470}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="KlinKlang\Utils">
+      <UniqueIdentifier>{e8232289-30e6-4d38-86a9-b6f157c57e41}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="KlinKlang\GUI\ImGui">
+      <UniqueIdentifier>{4c7b8534-9748-40a5-ad04-982b5be92ab6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="KlinKlang\GUI\glad">
+      <UniqueIdentifier>{f000629c-5f2b-4856-9d59-f82c7180fbaf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="KlinKlang\Windows">
+      <UniqueIdentifier>{1b723199-171a-4b4d-ad15-a8180e6f9c66}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="KlinKlang\Modules">
+      <UniqueIdentifier>{51414ded-4d3c-4c53-b890-da2a776f678a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="KlinKlang\Data">
+      <UniqueIdentifier>{afd990b6-8ade-4359-9384-ffbec4dd5e8e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="KlinKlang\Modules\Pokemon">
+      <UniqueIdentifier>{d1454a38-91ea-4606-8083-0cd34fad9007}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="KlinKlang\Modules\Engine">
+      <UniqueIdentifier>{86f991fc-9085-4985-8454-b5846a3d22b1}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="KlinKlang\externals\imgui\imconfig.h">
+      <Filter>KlinKlang\GUI\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="KlinKlang\externals\imgui\imgui.h">
+      <Filter>KlinKlang\GUI\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="KlinKlang\externals\imgui\imgui_impl_glfw.h">
+      <Filter>KlinKlang\GUI\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="KlinKlang\externals\imgui\imgui_impl_opengl3.h">
+      <Filter>KlinKlang\GUI\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="KlinKlang\externals\imgui\imgui_impl_opengl3_loader.h">
+      <Filter>KlinKlang\GUI\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="KlinKlang\externals\imgui\imgui_internal.h">
+      <Filter>KlinKlang\GUI\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="KlinKlang\externals\imgui\imgui_stdlib.h">
+      <Filter>KlinKlang\GUI\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="KlinKlang\externals\imgui\imstb_rectpack.h">
+      <Filter>KlinKlang\GUI\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="KlinKlang\externals\imgui\imstb_textedit.h">
+      <Filter>KlinKlang\GUI\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="KlinKlang\externals\imgui\imstb_truetype.h">
+      <Filter>KlinKlang\GUI\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="KlinKlang\externals\glad\glad.h">
+      <Filter>KlinKlang\GUI\glad</Filter>
+    </ClInclude>
+    <ClInclude Include="KlinKlang\utils\Alle5Format.h">
+      <Filter>KlinKlang\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="KlinKlang\utils\FileUtils.h">
+      <Filter>KlinKlang\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="KlinKlang\utils\KlinFormat.h">
+      <Filter>KlinKlang\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="KlinKlang\utils\NarcUtils.h">
+      <Filter>KlinKlang\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="KlinKlang\utils\StringUtils.h">
+      <Filter>KlinKlang\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="KlinKlang\Globals.h">
+      <Filter>KlinKlang</Filter>
+    </ClInclude>
+    <ClInclude Include="KlinKlang\Log.h">
+      <Filter>KlinKlang</Filter>
+    </ClInclude>
+    <ClInclude Include="KlinKlang\windows\Engine.h">
+      <Filter>KlinKlang\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="KlinKlang\windows\Window.h">
+      <Filter>KlinKlang\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="KlinKlang\windows\Wizard.h">
+      <Filter>KlinKlang\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="KlinKlang\data\PersonalData.h">
+      <Filter>KlinKlang\Data</Filter>
+    </ClInclude>
+    <ClInclude Include="KlinKlang\data\ChildData.h">
+      <Filter>KlinKlang\Data</Filter>
+    </ClInclude>
+    <ClInclude Include="KlinKlang\data\EvolutionData.h">
+      <Filter>KlinKlang\Data</Filter>
+    </ClInclude>
+    <ClInclude Include="KlinKlang\data\LearnsetData.h">
+      <Filter>KlinKlang\Data</Filter>
+    </ClInclude>
+    <ClInclude Include="KlinKlang\data\Pokemon.h">
+      <Filter>KlinKlang\Data</Filter>
+    </ClInclude>
+    <ClInclude Include="KlinKlang\data\Project.h">
+      <Filter>KlinKlang\Data</Filter>
+    </ClInclude>
+    <ClInclude Include="KlinKlang\utils\DataUtils.h">
+      <Filter>KlinKlang\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="KlinKlang\modules\Child.h">
+      <Filter>KlinKlang\Modules\Pokemon</Filter>
+    </ClInclude>
+    <ClInclude Include="KlinKlang\modules\Evolution.h">
+      <Filter>KlinKlang\Modules\Pokemon</Filter>
+    </ClInclude>
+    <ClInclude Include="KlinKlang\modules\Learnset.h">
+      <Filter>KlinKlang\Modules\Pokemon</Filter>
+    </ClInclude>
+    <ClInclude Include="KlinKlang\modules\Personal.h">
+      <Filter>KlinKlang\Modules\Pokemon</Filter>
+    </ClInclude>
+    <ClInclude Include="KlinKlang\modules\PokemonForm.h">
+      <Filter>KlinKlang\Modules\Pokemon</Filter>
+    </ClInclude>
+    <ClInclude Include="KlinKlang\modules\PokemonSearch.h">
+      <Filter>KlinKlang\Modules\Pokemon</Filter>
+    </ClInclude>
+    <ClInclude Include="KlinKlang\modules\PokemonText.h">
+      <Filter>KlinKlang\Modules\Pokemon</Filter>
+    </ClInclude>
+    <ClInclude Include="KlinKlang\modules\Module.h">
+      <Filter>KlinKlang\Modules</Filter>
+    </ClInclude>
+    <ClInclude Include="KlinKlang\modules\MenuBar.h">
+      <Filter>KlinKlang\Modules\Engine</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="KlinKlang\externals\imgui\imgui.cpp">
+      <Filter>KlinKlang\GUI\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="KlinKlang\externals\imgui\imgui_demo.cpp">
+      <Filter>KlinKlang\GUI\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="KlinKlang\externals\imgui\imgui_draw.cpp">
+      <Filter>KlinKlang\GUI\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="KlinKlang\externals\imgui\imgui_impl_glfw.cpp">
+      <Filter>KlinKlang\GUI\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="KlinKlang\externals\imgui\imgui_impl_opengl3.cpp">
+      <Filter>KlinKlang\GUI\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="KlinKlang\externals\imgui\imgui_stdlib.cpp">
+      <Filter>KlinKlang\GUI\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="KlinKlang\externals\imgui\imgui_tables.cpp">
+      <Filter>KlinKlang\GUI\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="KlinKlang\externals\imgui\imgui_widgets.cpp">
+      <Filter>KlinKlang\GUI\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="KlinKlang\externals\glad\glad.c">
+      <Filter>KlinKlang\GUI\glad</Filter>
+    </ClCompile>
+    <ClCompile Include="KlinKlang\utils\Alle5Format.cpp">
+      <Filter>KlinKlang\Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="KlinKlang\utils\FileUtils.cpp">
+      <Filter>KlinKlang\Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="KlinKlang\utils\KlinFormat.cpp">
+      <Filter>KlinKlang\Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="KlinKlang\utils\NarcUtils.cpp">
+      <Filter>KlinKlang\Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="KlinKlang\utils\StringUtils.cpp">
+      <Filter>KlinKlang\Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="KlinKlang\KlinKlang.cpp">
+      <Filter>KlinKlang</Filter>
+    </ClCompile>
+    <ClCompile Include="KlinKlang\Log.cpp">
+      <Filter>KlinKlang</Filter>
+    </ClCompile>
+    <ClCompile Include="KlinKlang\windows\Engine.cpp">
+      <Filter>KlinKlang\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="KlinKlang\windows\Window.cpp">
+      <Filter>KlinKlang\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="KlinKlang\windows\Wizard.cpp">
+      <Filter>KlinKlang\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="KlinKlang\data\Pokemon.cpp">
+      <Filter>KlinKlang\Data</Filter>
+    </ClCompile>
+    <ClCompile Include="KlinKlang\data\Project.cpp">
+      <Filter>KlinKlang\Data</Filter>
+    </ClCompile>
+    <ClCompile Include="KlinKlang\data\PersonalData.cpp">
+      <Filter>KlinKlang\Data</Filter>
+    </ClCompile>
+    <ClCompile Include="KlinKlang\data\LearnsetData.cpp">
+      <Filter>KlinKlang\Data</Filter>
+    </ClCompile>
+    <ClCompile Include="KlinKlang\data\EvolutionData.cpp">
+      <Filter>KlinKlang\Data</Filter>
+    </ClCompile>
+    <ClCompile Include="KlinKlang\utils\DataUtils.cpp">
+      <Filter>KlinKlang\Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="KlinKlang\modules\Child.cpp">
+      <Filter>KlinKlang\Modules\Pokemon</Filter>
+    </ClCompile>
+    <ClCompile Include="KlinKlang\modules\Evolution.cpp">
+      <Filter>KlinKlang\Modules\Pokemon</Filter>
+    </ClCompile>
+    <ClCompile Include="KlinKlang\modules\Learnset.cpp">
+      <Filter>KlinKlang\Modules\Pokemon</Filter>
+    </ClCompile>
+    <ClCompile Include="KlinKlang\modules\Personal.cpp">
+      <Filter>KlinKlang\Modules\Pokemon</Filter>
+    </ClCompile>
+    <ClCompile Include="KlinKlang\modules\PokemonForm.cpp">
+      <Filter>KlinKlang\Modules\Pokemon</Filter>
+    </ClCompile>
+    <ClCompile Include="KlinKlang\modules\PokemonSearch.cpp">
+      <Filter>KlinKlang\Modules\Pokemon</Filter>
+    </ClCompile>
+    <ClCompile Include="KlinKlang\modules\PokemonText.cpp">
+      <Filter>KlinKlang\Modules\Pokemon</Filter>
+    </ClCompile>
+    <ClCompile Include="KlinKlang\modules\Module.cpp">
+      <Filter>KlinKlang\Modules</Filter>
+    </ClCompile>
+    <ClCompile Include="KlinKlang\modules\MenuBar.cpp">
+      <Filter>KlinKlang\Modules\Engine</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>
