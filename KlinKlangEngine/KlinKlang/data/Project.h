@@ -12,7 +12,7 @@ struct Project
 	string path = "";
 	u32 order = 0;
 
-	string ctrPath = "";
+	string ctrMapProjectPath = "";
 	string romPath = "";
 
 	string settingsPath = "";
@@ -34,6 +34,18 @@ struct Project
 	u32 showPokeStudio = DEFAULT_SHOW_POKESTUDIO;
 
 	u32 maxEvents = DEFAULT_MAX_EVENTS;
+
+	string compilerPath = DEFAULT_COMPILER_PATH;
+
+	string javaPath = DEFAULT_JAVA_PATH;
+	string ctrMapPath = DEFAULT_CTRMAP_PATH;
+	
+	string extLibPath = DEFAULT_EXTLIB_PATH;
+	string libRPMPath = DEFAULT_LIBRPM_PATH;
+	string nkPath = DEFAULT_NK_PATH;
+	string swanPath = DEFAULT_SWAN_PATH;
+
+	vector<string> enabledPatches = vector<string>();
 };
 
 ReturnState LoadProjectSettings(Project& project, const string& name);

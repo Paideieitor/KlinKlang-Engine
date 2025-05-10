@@ -38,6 +38,18 @@ ReturnState MenuBar::RenderGUI()
 		ImGui::IsKeyPressed(ImGuiKey_4))
 		ChangeGroup(TRAINER_GROUP);
 
+	if (engine->commandInput &&
+		ImGui::IsKeyPressed(ImGuiKey_B))
+		engine->BuildPatches();
+
+	if (engine->commandInput &&
+		ImGui::IsKeyPressed(ImGuiKey_N))
+		engine->patcherSettingsMenu = !engine->patcherSettingsMenu;
+
+	if (engine->commandInput &&
+		ImGui::IsKeyPressed(ImGuiKey_R))
+		engine->LoadPatches(true);
+
 	if (ImGui::BeginMainMenuBar())
 	{
 		if (ImGui::BeginMenu("Project"))
@@ -64,9 +76,39 @@ ReturnState MenuBar::RenderGUI()
 
 			ImGui::EndMenu();
 		}
+
+		ImGui::BeginDisabled(!engine->patchesEnabled);
+		if (ImGui::BeginMenu("Patcher"))
+		{
+			if (ImGui::MenuItem("Build", "Ctrl+B"))
+				engine->BuildPatches();
+
+			if (ImGui::MenuItem("Build Settings", "Ctrl+N"))
+				engine->patcherSettingsMenu = !engine->patcherSettingsMenu;
+				
+			if (ImGui::MenuItem("Reload", "Ctrl+R"))
+				engine->LoadPatches(true);
+				
+			ImGui::Separator();
+			ImGui::Text("Patches:");
+
+			for (u32 patchIdx = 0; patchIdx < (u32)engine->patches.size(); ++patchIdx)
+			{
+				Patch& patch = engine->patches[patchIdx];
+				string state = " ";
+				if (patch.enabled)
+					state = "Enabled";
+				if (ImGui::MenuItem(patch.name.c_str(), state.c_str()))
+					patch.open = !patch.open;
+			}
+
+			ImGui::EndMenu();
+		}
+		ImGui::EndDisabled();
+
 		ImGui::EndMainMenuBar();
 	}
-
+			
 	return OK;
 }
 

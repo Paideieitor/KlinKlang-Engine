@@ -26,8 +26,16 @@ using namespace std;
 	#define DEFAULT_SELECTED_PKM_FORM 0u
 	#define DEFAULT_SHOW_POKESTUDIO false
 	#define DEFAULT_MAX_EVENTS 2000u
+	#define DEFAULT_COMPILER_PATH ""
+	#define DEFAULT_JAVA_PATH ""
+	#define DEFAULT_CTRMAP_PATH ""
+	#define DEFAULT_EXTLIB_PATH ""
+	#define DEFAULT_LIBRPM_PATH ""
+	#define DEFAULT_NK_PATH ""
+	#define DEFAULT_SWAN_PATH ""
 
 #define PROJECTS_PATH "projects"
+#define PATCHES_PATH "patches"
 
 #define CTRMAP_FILE_EXTENSION "cmproj"
 #define CTRMAP_VFSBASE "VFSBase"

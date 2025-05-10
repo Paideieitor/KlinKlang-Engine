@@ -3,6 +3,8 @@
 
 #include "Window.h"
 
+#include "KlangFormat.h"
+
 #include "Project.h"
 #include "Pokemon.h"
 #include "PersonalData.h"
@@ -17,6 +19,15 @@ struct Event
 	u32 type = 0; 
 	u32 subType = 0;
 	void* value = nullptr;
+};
+
+struct Patch
+{
+	string name = "";
+	Klang settings = Klang();
+
+	bool enabled = false;
+	bool open = false;
 };
 
 class Engine : public Window
@@ -103,6 +114,11 @@ public:
 	vector<string> moveNames = vector<string>();
 	vector<string> moveDescriptions = vector<string>();
 
+	vector<Patch> patches = vector<Patch>();
+	u32 patchesModuleIdx = 0;
+	bool patcherSettingsMenu = false;
+	bool patchesEnabled = false;
+
 	bool commandInput = false;
 
 	template<class T>
@@ -148,6 +164,9 @@ public:
 	void SetCurrentPokemon(u32 idx, u32 form);
 	Pokemon* GetCurrentPokemon() { return currentPkm; }
 
+	void LoadPatches(bool reload);
+	void BuildPatches();
+
 protected:
 
 	virtual ReturnState RenderGUI() override;
@@ -164,6 +183,8 @@ private:
 	bool LoadEvolution(EvolutionData& evoData, const string& file);
 	bool LoadChild(ChildData& childData, const string& file);
 
+	void SaveEnabledPatches();
+
 	vector<Module*> modules = vector<Module*>();
 	vector<Event> reverseEvents = vector<Event>();
 	vector<Event> saveEvents = vector<Event>();
@@ -174,8 +195,10 @@ private:
 };
 
 #define CTRMAP_FILESYSTEM_PATH "vfs\\data\\a"
+#define CTRMAP_PATCHES_PATH "vfs\\data\\patches"
 #define ROM_FILESYSTEM_PATH "data\\a"
 #define FILESYSTEM_NAME "temp\\a"
+#define KLANG_PATH "source\\settings.h"
 
 #define TEXT_NARC_PATH "0\\0\\2"
 	#define PKM_NAME_FILE_ID 90

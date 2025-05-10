@@ -7,10 +7,12 @@
 
 #include "FileUtils.h"
 #include "NarcUtils.h"
+#include "StringUtils.h"
 
 #include "Alle5Format.h"
 
 #include "MenuBar.h"
+#include "Patcher.h"
 #include "PokemonSearch.h"
 #include "PokemonForm.h"
 #include "PokemonText.h"
@@ -24,7 +26,12 @@
 Engine::Engine(Project* const project) : project(project)
 {
 	string fsPath = project->path + PATH_SEPARATOR + FILESYSTEM_NAME;
-	RemoveFolder(fsPath);
+	if (PathExists(fsPath) && 
+		RemoveFolder(fsPath) == -1)
+	{
+		Log(CRITICAL, "Error removing temp forlder!");
+		return;
+	}
 
 	if (!Start())
 	{
@@ -34,6 +41,7 @@ Engine::Engine(Project* const project) : project(project)
 
 	// Engine
 	modules.emplace_back(new MenuBar(this, ENGINE_GROUP));
+	modules.emplace_back(new Patcher(this, ENGINE_GROUP));
 	// Pokémon
 	modules.emplace_back(new PokemonSearch(this, POKEMON_GROUP));
 	modules.emplace_back(new PokemonForm(this, POKEMON_GROUP));
@@ -95,7 +103,7 @@ bool Engine::LoadTextFiles()
 	vector<u16> missingTextFiles;
 
 	// The path where the text files are stored in the CTRMap project
-	string ctrTextNarcPath = project->ctrPath + PATH_SEPARATOR + CTRMAP_FILESYSTEM_PATH + PATH_SEPARATOR + TEXT_NARC_PATH;
+	string ctrTextNarcPath = project->ctrMapProjectPath + PATH_SEPARATOR + CTRMAP_FILESYSTEM_PATH + PATH_SEPARATOR + TEXT_NARC_PATH;
 	// The path to the text NARC file in the extracted ROM files
 	string romTextNarcPath = project->romPath + PATH_SEPARATOR + ROM_FILESYSTEM_PATH + PATH_SEPARATOR + TEXT_NARC_PATH;
 	// Create the path where the text files will be stored
@@ -239,7 +247,7 @@ u32 Engine::LoadDataNarc(const string& narcPath, string& outputPath)
 	vector<u16> excludeFiles;
 
 	// The path where the files are stored in the CTRMap project
-	string ctrNarcPath = project->ctrPath + PATH_SEPARATOR + CTRMAP_FILESYSTEM_PATH + PATH_SEPARATOR + narcPath;
+	string ctrNarcPath = project->ctrMapProjectPath + PATH_SEPARATOR + CTRMAP_FILESYSTEM_PATH + PATH_SEPARATOR + narcPath;
 	// The path to the NARC file in the extracted ROM
 	string romNarcPath = project->romPath + PATH_SEPARATOR + ROM_FILESYSTEM_PATH + PATH_SEPARATOR + narcPath;
 	// Create the path where the files will be stored
@@ -738,5 +746,208 @@ void Engine::Save()
 		modules[saveEvent->type]->HandleSaveEvent(saveEvent);
 	}
 
+	SaveEnabledPatches();
+
 	SaveProjectSettings(*project);
+}
+
+void Engine::LoadPatches(bool reload)
+{
+	// Save the enabled state of the old patches before deleting the data when reloading
+	if (reload)
+		SaveEnabledPatches();
+
+	patches.clear();
+	// Delete any reverse event that affects the Patcher module
+	for (u32 eventIdx = 0; eventIdx < (u32)reverseEvents.size(); ++eventIdx)
+	{
+		if (reverseEvents[eventIdx].type == patchesModuleIdx)
+		{
+			reverseEvents.erase(reverseEvents.begin() + eventIdx);
+			--eventIdx;
+		}
+	}
+
+	// Check that patches can be installed to CTRMap
+	string ctrPatchesFolder = project->ctrMapProjectPath + PATH_SEPARATOR + CTRMAP_PATCHES_PATH;
+	if (!PathExists(ctrPatchesFolder))
+	{
+		patchesEnabled = false;
+		return;
+	}
+	patchesEnabled = true;
+
+	// Load each patch in the patches folder
+	vector<string> patchesNames = GetFolderElementList(PATCHES_PATH);
+	for (u32 patchIdx = 0; patchIdx < (u32)patchesNames.size(); ++patchIdx)
+	{
+		Patch patch;
+		patch.name = patchesNames[patchIdx];
+
+		string patchPath = string(PATCHES_PATH) + PATH_SEPARATOR + patch.name + PATH_SEPARATOR + KLANG_PATH;
+		if (!LoadKlang(patch.settings, patchPath))
+		{
+			Log(WARNING, "Couldn't load %s patch", patch.name);
+			break;
+		}
+
+		// If the patch was enabled before loading, keep it that way
+		for (u32 enabledIdx = 0; enabledIdx < (u32)project->enabledPatches.size(); ++enabledIdx)
+		{
+			if (patch.name == project->enabledPatches[enabledIdx])
+			{
+				patch.enabled = true;
+				break;
+			}
+		}
+
+		patches.push_back(patch);
+	}
+}
+
+enum CompileType
+{
+	DONT_COMPILE = 0,
+	CPP = 1,
+	ARM = 2,
+};
+void Engine::BuildPatches()
+{
+	if (!patchesEnabled)
+		return;
+
+	for (u32 patchIdx = 0; patchIdx < (u32)patches.size(); ++patchIdx)
+	{
+		Patch& patch = patches[patchIdx];
+		if (patch.enabled)
+		{
+			string patchPath = string(PATCHES_PATH) + PATH_SEPARATOR + patch.name;
+
+			string esdbPath;
+			vector<string> pathFiles = GetFolderElementList(patchPath);
+			for (u32 fileIdx = 0; fileIdx < (u32)pathFiles.size(); ++fileIdx)
+			{
+				string extension = LowerCase(GetFileExtension(pathFiles[fileIdx]));
+				if (extension == "yml")
+				{
+					esdbPath = patchPath + PATH_SEPARATOR + pathFiles[fileIdx];
+					break;
+				}
+			}
+			if (esdbPath.empty())
+			{
+				Log(WARNING, "%s patch is missing an ESDB!", patch.name.c_str());
+				continue;
+			}
+
+			string buildPath = patchPath + PATH_SEPARATOR + "build";
+			CreateFolder(buildPath);
+
+			FileStream fileStream;
+			LoadEmptyFileStream(fileStream);
+
+			string sourcePath = patchPath + PATH_SEPARATOR + "source";
+			vector<string> sourceFiles = GetFolderElementList(sourcePath);
+
+			// Compile each source file
+			vector<string> elfFiles;
+			for (u32 fileIdx = 0; fileIdx < (u32)sourceFiles.size(); ++fileIdx)
+			{
+				string extension = LowerCase(GetFileExtension(sourceFiles[fileIdx]));
+
+				CompileType compType = DONT_COMPILE;
+				if (extension == "cpp")
+					compType = CPP;
+				else if (extension == "s")
+					compType = ARM;
+				else
+					continue;
+
+				string fileName = sourceFiles[fileIdx].substr(0, sourceFiles[fileIdx].length() - extension.length() - 1);
+				
+				string compileCommand;
+				if (project->compilerPath.length())
+					compileCommand += project->compilerPath + PATH_SEPARATOR;
+				compileCommand += "arm-none-eabi-g++ ";
+				compileCommand += GetAbsolutePath(sourcePath) + PATH_SEPARATOR;
+				compileCommand += sourceFiles[fileIdx] + " ";
+
+				string elfPath = buildPath + PATH_SEPARATOR;
+				switch (compType)
+				{
+				case CPP:
+				{
+					elfPath += fileName + ".o";
+
+					compileCommand += string("-I ") + project->extLibPath + " ";
+					compileCommand += string("-I ") + project->libRPMPath + " ";
+					compileCommand += string("-I ") + project->nkPath + " ";
+					compileCommand += string("-I ") + project->swanPath + " ";
+					compileCommand += string("-o ") + elfPath + " ";
+					compileCommand += "-r -mthumb -march=armv5t -Os";
+
+					break;
+				}
+				case ARM:
+				{
+					elfPath += fileName + "ARM.o";
+
+					compileCommand += string("-o ") + elfPath + " ";
+					compileCommand += "-r -mthumb -march=armv5t -Os";
+
+					break;
+				}
+				}
+				compileCommand += "\n";
+
+				elfFiles.push_back(elfPath);
+				FileStreamBufferWriteBack(fileStream, (u8*)compileCommand.c_str(), compileCommand.length());
+			}
+
+			// Merge all the compiled files in a single ELF file
+			string elfPath = buildPath + PATH_SEPARATOR + patch.name + ".elf";
+			string mergeCommand;
+			if (project->compilerPath.length())
+				mergeCommand += project->compilerPath + PATH_SEPARATOR;
+			mergeCommand += "arm-none-eabi-ld -r ";
+			mergeCommand += string("-o ") + elfPath + " ";
+			for (u32 elfIdx = 0; elfIdx < (u32)elfFiles.size(); ++elfIdx)
+				mergeCommand += elfFiles[elfIdx] + " ";
+			mergeCommand += "\n";
+			FileStreamBufferWriteBack(fileStream, (u8*)mergeCommand.c_str(), mergeCommand.length());
+
+			string dllPath = project->ctrMapProjectPath + PATH_SEPARATOR + CTRMAP_PATCHES_PATH + PATH_SEPARATOR + patch.name + ".dll";
+
+			// Link the patch using CTRMap
+			string linkCommand;
+			if (project->javaPath.length())
+				linkCommand += project->javaPath + PATH_SEPARATOR;
+			linkCommand += "java ";
+			linkCommand += string("-cp ") + project->ctrMapPath + PATH_SEPARATOR + "CTRMap.jar ";
+			linkCommand += "rpm.cli.RPMTool ";
+			linkCommand += string("-i ") + elfPath + " ";
+			linkCommand += string("-o ") + dllPath + " ";
+			linkCommand += string("--esdb ") + esdbPath + " ";
+			linkCommand += "--fourcc DLXF --generate-relocations";
+			linkCommand += "\n";
+			FileStreamBufferWriteBack(fileStream, (u8*)linkCommand.c_str(), linkCommand.length());
+
+			string buildFile = patchPath + PATH_SEPARATOR + patch.name;
+#ifdef _WIN32
+			buildFile += ".bat";
+#else
+			buildFile += ".sh";
+#endif
+			SaveFileStream(fileStream, buildFile);
+			system(buildFile.c_str());
+		}
+	}
+}
+
+void Engine::SaveEnabledPatches()
+{
+	project->enabledPatches.clear();
+	for (u32 patchIdx = 0; patchIdx < (u32)patches.size(); ++patchIdx)
+		if (patches[patchIdx].enabled)
+			project->enabledPatches.push_back(patches[patchIdx].name);
 }

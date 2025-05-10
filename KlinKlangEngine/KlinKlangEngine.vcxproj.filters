@@ -145,6 +145,12 @@
     <ClInclude Include="KlinKlang\modules\MenuBar.h">
       <Filter>KlinKlang\Modules\Engine</Filter>
     </ClInclude>
+    <ClInclude Include="KlinKlang\utils\KlangFormat.h">
+      <Filter>KlinKlang\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="KlinKlang\modules\Patcher.h">
+      <Filter>KlinKlang\Modules\Engine</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="KlinKlang\externals\imgui\imgui.cpp">
@@ -247,6 +253,12 @@
       <Filter>KlinKlang\Modules</Filter>
     </ClCompile>
     <ClCompile Include="KlinKlang\modules\MenuBar.cpp">
+      <Filter>KlinKlang\Modules\Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="KlinKlang\utils\KlangFormat.cpp">
+      <Filter>KlinKlang\Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="KlinKlang\modules\Patcher.cpp">
       <Filter>KlinKlang\Modules\Engine</Filter>
     </ClCompile>
   </ItemGroup>

@@ -5,6 +5,8 @@
 
 #include "Module.h"
 
+struct Patch;
+
 class MenuBar : public Module
 {
 public:

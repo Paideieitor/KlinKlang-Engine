@@ -43,6 +43,7 @@
     <ClInclude Include="KlinKlang\modules\Learnset.h" />
     <ClInclude Include="KlinKlang\modules\MenuBar.h" />
     <ClInclude Include="KlinKlang\modules\Module.h" />
+    <ClInclude Include="KlinKlang\modules\Patcher.h" />
     <ClInclude Include="KlinKlang\modules\Personal.h" />
     <ClInclude Include="KlinKlang\modules\PokemonForm.h" />
     <ClInclude Include="KlinKlang\modules\PokemonSearch.h" />
@@ -50,6 +51,7 @@
     <ClInclude Include="KlinKlang\utils\Alle5Format.h" />
     <ClInclude Include="KlinKlang\utils\DataUtils.h" />
     <ClInclude Include="KlinKlang\utils\FileUtils.h" />
+    <ClInclude Include="KlinKlang\utils\KlangFormat.h" />
     <ClInclude Include="KlinKlang\utils\KlinFormat.h" />
     <ClInclude Include="KlinKlang\utils\NarcUtils.h" />
     <ClInclude Include="KlinKlang\utils\StringUtils.h" />
@@ -79,6 +81,7 @@
     <ClCompile Include="KlinKlang\modules\Learnset.cpp" />
     <ClCompile Include="KlinKlang\modules\MenuBar.cpp" />
     <ClCompile Include="KlinKlang\modules\Module.cpp" />
+    <ClCompile Include="KlinKlang\modules\Patcher.cpp" />
     <ClCompile Include="KlinKlang\modules\Personal.cpp" />
     <ClCompile Include="KlinKlang\modules\PokemonForm.cpp" />
     <ClCompile Include="KlinKlang\modules\PokemonSearch.cpp" />
@@ -86,6 +89,7 @@
     <ClCompile Include="KlinKlang\utils\Alle5Format.cpp" />
     <ClCompile Include="KlinKlang\utils\DataUtils.cpp" />
     <ClCompile Include="KlinKlang\utils\FileUtils.cpp" />
+    <ClCompile Include="KlinKlang\utils\KlangFormat.cpp" />
     <ClCompile Include="KlinKlang\utils\KlinFormat.cpp" />
     <ClCompile Include="KlinKlang\utils\NarcUtils.cpp" />
     <ClCompile Include="KlinKlang\utils\StringUtils.cpp" />

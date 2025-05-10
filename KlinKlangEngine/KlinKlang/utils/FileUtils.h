@@ -17,6 +17,8 @@ bool PathExists(const string& path);
 bool IsFilePath(const string& path);
 // Returns the absolute path of a given relative path
 string GetAbsolutePath(const string& path);
+// Returns the extention of the file in the path if there is any
+string GetFileExtension(const string& path);
 
 // Creates a file in the given path, returns false if it fails
 bool CreateFile(const string& path);
@@ -28,7 +30,7 @@ bool CopyFile(const string& path, const string& copyPath);
 // Creates a folder in the given path, returns false if it fails
 bool CreateFolder(const string& path);
 // Removes a folder and all its contents in the given path, returns the amount of deleted elements
-u32 RemoveFolder(const string& path);
+int RemoveFolder(const string& path);
 
 // Returns the list of elements inside a folder path
 vector<string> GetFolderElementList(const string& path);

@@ -76,16 +76,21 @@ ReturnState Wizard::RenderGUI()
 		if (ImGui::Button("Delete"))
 		{
 			string projectPath = string(PROJECTS_PATH) + PATH_SEPARATOR + projectList[selectedIdx].name;
-			RemoveFolder(projectPath);
+			if (RemoveFolder(projectPath) != -1)
+			{
+				projectList.erase(projectList.begin() + selectedIdx);
+				if (!projectList.size())
+					selectedIdx = 0;
+				else if (selectedIdx >= projectList.size())
+					selectedIdx = (int)projectList.size() - 1;
 
-			projectList.erase(projectList.begin() + selectedIdx);
-			if (!projectList.size())
-				selectedIdx = 0;
-			else if (selectedIdx >= projectList.size())
-				selectedIdx = (int)projectList.size() - 1;
-
-			UpdateProjectListOrderDelete(selectedIdx);
-			showDeleteMessage = false;
+				UpdateProjectListOrderDelete(selectedIdx);
+				showDeleteMessage = false;
+			}
+			else
+			{
+				Log(WARNING, "Unable to delete project %s", projectPath.c_str());
+			}
 		}
 
 		ImGui::SameLine();
@@ -234,8 +239,8 @@ ReturnState Wizard::CreateProject()
 		Project project;
 		project.order = 0;
 
-		project.ctrPath = path;
-		SeparatePathAndFile(project.ctrPath, project.name);
+		project.ctrMapProjectPath = path;
+		SeparatePathAndFile(project.ctrMapProjectPath, project.name);
 		project.name = project.name.substr(0, project.name.length() - sizeof(CTRMAP_FILE_EXTENSION));
 
 		for (u32 projectIdx = 0; projectIdx < projectList.size(); ++projectIdx)

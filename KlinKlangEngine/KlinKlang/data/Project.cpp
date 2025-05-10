@@ -38,7 +38,7 @@ ReturnState LoadProjectSettings(Project& project, const string& name)
 		project.order = ~0;
 	}
 
-	if (!GetKlinValueString(klin, KLIN_CTRMAP_PATH, project.ctrPath))
+	if (!GetKlinValueString(klin, KLIN_CTRMAP_PROJECT_PATH, project.ctrMapProjectPath))
 	{
 		Log(WARNING, "Could not find project ctrmap path in project file (%s)", project.settingsPath.c_str());
 		ReleaseKlin(klin);
@@ -70,6 +70,16 @@ ReturnState LoadProjectSettings(Project& project, const string& name)
 
 	GetKlinValueU32(klin, KLIN_MAX_EVENTS, project.maxEvents);
 
+	GetKlinValueString(klin, KLIN_COMPILER_PATH, project.compilerPath);
+	GetKlinValueString(klin, KLIN_JAVA_PATH, project.javaPath);
+	GetKlinValueString(klin, KLIN_CTRMAP_PATH, project.ctrMapPath);
+	GetKlinValueString(klin, KLIN_EXTLIB_PATH, project.extLibPath);
+	GetKlinValueString(klin, KLIN_LIBRPM_PATH, project.libRPMPath);
+	GetKlinValueString(klin, KLIN_NK_PATH, project.nkPath);
+	GetKlinValueString(klin, KLIN_SWAN_PATH, project.swanPath);
+
+	GetKlinListString(klin, KLIN_ENABLED_PATCHES, project.enabledPatches);
+
 	ReleaseKlin(klin);
     return OK;
 }
@@ -87,7 +97,7 @@ ReturnState SaveProjectSettings(const Project& project)
 	SetKlinValueString(klin, KLIN_PROJECT_NAME, project.name);
 	SetKlinValueU32(klin, KLIN_PROJECT_ORDER, project.order);
 
-	SetKlinValueString(klin, KLIN_CTRMAP_PATH, project.ctrPath);
+	SetKlinValueString(klin, KLIN_CTRMAP_PROJECT_PATH, project.ctrMapProjectPath);
 	SetKlinValueString(klin, KLIN_ROM_PATH, project.romPath);
 
 	if (project.width != DEFAULT_WINDOW_WIDTH)
@@ -120,6 +130,24 @@ ReturnState SaveProjectSettings(const Project& project)
 
 	if (project.maxEvents != DEFAULT_MAX_EVENTS)
 		SetKlinValueU32(klin, KLIN_MAX_EVENTS, project.maxEvents);
+
+	if (project.compilerPath != DEFAULT_COMPILER_PATH)
+		SetKlinValueString(klin, KLIN_COMPILER_PATH, project.compilerPath);
+	if (project.javaPath != DEFAULT_JAVA_PATH)
+		SetKlinValueString(klin, KLIN_JAVA_PATH, project.javaPath);
+	if (project.ctrMapPath != DEFAULT_CTRMAP_PATH)
+		SetKlinValueString(klin, KLIN_CTRMAP_PATH, project.ctrMapPath);
+	if (project.extLibPath != DEFAULT_EXTLIB_PATH)
+		SetKlinValueString(klin, KLIN_EXTLIB_PATH, project.extLibPath);
+	if (project.libRPMPath != DEFAULT_LIBRPM_PATH)
+		SetKlinValueString(klin, KLIN_LIBRPM_PATH, project.libRPMPath);
+	if (project.nkPath != DEFAULT_NK_PATH)
+		SetKlinValueString(klin, KLIN_NK_PATH, project.nkPath);
+	if (project.swanPath != DEFAULT_SWAN_PATH)
+		SetKlinValueString(klin, KLIN_SWAN_PATH, project.swanPath);
+
+	if (project.enabledPatches.size())
+		SetKlinListString(klin, KLIN_ENABLED_PATCHES, project.enabledPatches);
 
 	SaveKlin(klin, project.settingsPath, true);
 	return OK;

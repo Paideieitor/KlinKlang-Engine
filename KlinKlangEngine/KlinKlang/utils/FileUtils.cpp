@@ -16,7 +16,27 @@ bool IsFilePath(const string& path)
 
 string GetAbsolutePath(const string& path)
 {
-	return filesystem::absolute(path).u8string();
+	std::error_code ec;
+	filesystem::path absolute = filesystem::absolute(path, ec);
+	if (absolute == filesystem::path())
+	{
+		Log(CRITICAL, "Error getting absolute path %s (%s)", path.c_str(), ec.message().c_str());
+		return string();
+	}
+	return absolute.u8string();
+}
+
+string GetFileExtension(const string& path)
+{
+	if (!IsFilePath(path))
+		return string();
+
+	size_t start = path.find_last_of('.');
+	if (start == string::npos)
+		return string();
+
+	++start;
+	return path.substr(start, path.length() - start);
 }
 
 bool CreateFile(const string& path)
@@ -36,7 +56,13 @@ bool CreateFile(const string& path)
 
 bool RemoveFile(const string& path)
 {
-	return filesystem::remove(path);
+	std::error_code ec;
+	if (!filesystem::remove(path, ec))
+	{
+		Log(CRITICAL, "Error removing file %s (%s)", path.c_str(), ec.message().c_str());
+		return false;
+	}
+	return true;
 }
 
 bool CopyFile(const string& path, const string& copyPath)
@@ -48,17 +74,33 @@ bool CopyFile(const string& path, const string& copyPath)
 	if (!PathExists(dirPath))
 		CreateFolder(dirPath);
 
-	return filesystem::copy_file(path, copyPath, filesystem::copy_options::overwrite_existing);
+	std::error_code ec;
+	if (!filesystem::copy_file(path, copyPath, filesystem::copy_options::overwrite_existing, ec))
+	{
+		Log(CRITICAL, "Error copying file %s (%s)", path.c_str(), ec.message().c_str());
+		return false;
+	}
+	return true;
 }
 
 bool CreateFolder(const string& path)
 {
-	return filesystem::create_directories(path);
+	std::error_code ec;
+	if (!filesystem::create_directories(path, ec))
+	{
+		Log(CRITICAL, "Error creating directory %s (%s)", path.c_str(), ec.message().c_str());
+		return false;
+	}
+	return true;
 }
 
-u32 RemoveFolder(const string& path)
+int RemoveFolder(const string& path)
 {
-	return (u32)filesystem::remove_all(path);
+	std::error_code ec;
+	int output = (u32)filesystem::remove_all(path, ec);
+	if (output == -1)
+		Log(CRITICAL, "Error removing folder %s (%s)", path.c_str(), ec.message().c_str());
+	return output;
 }
 
 vector<string> GetFolderElementList(const string& path)
@@ -89,8 +131,10 @@ void NormalizePathSeparator(string& path)
 
 string RemoveFileFromPath(const string& path)
 {
-	u32 lastSlash = (u32)path.find_last_of(PATH_SEPARATOR) + 1;
-	return path.substr(0, lastSlash - 1);
+	int lastSlash = (int)path.find_last_of(PATH_SEPARATOR);
+	if (lastSlash < 0)
+		return "";
+	return path.substr(0, lastSlash);
 }
 
 string GetFileFromPath(const string& path, bool checkFile)
