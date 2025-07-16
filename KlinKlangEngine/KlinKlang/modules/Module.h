@@ -21,6 +21,7 @@ public:
 
 	virtual void HandleReverseEvent(const Event* reverseEvent) = 0;
 	virtual void HandleSaveEvent(Event* saveEvent) = 0;
+	virtual void HandleGroupEvent(Event* groupEvent) {}
 
 protected:
 

@@ -142,7 +142,6 @@ bool LoadAlle5File(const string& path, vector<string>& lines)
         while (offset < start + length * 2) // loop through the entire text line
         {
             wchar_t character = DecryptCharacter(FileStreamReadUpdate<wchar_t>(fileStream, offset), lineKey);
-
             if (character == 0xFFFF)
                 break;
 
@@ -187,6 +186,13 @@ bool LoadAlle5File(const string& path, vector<string>& lines)
     return true;
 }
 
+wstring MakeWideLine(string line)
+{
+    wstring output = Utf8ToWide(line);
+    output.push_back((wchar_t)0xFFFF);
+    return output;
+}
+
 bool SaveAlle5File(const string& path, const vector<string>& lines)
 {
     FileStream fileStream;
@@ -205,8 +211,9 @@ bool SaveAlle5File(const string& path, const vector<string>& lines)
     // Set the line data
     for (u16 lineIdx = 0; lineIdx < lines.size(); ++lineIdx)
     {
-        FileStreamPutBack<u32>(fileStream, ~0); // temporary value
-        FileStreamPutBack<u32>(fileStream, (u32)lines[lineIdx].length());
+        // temporary values
+        FileStreamPutBack<u32>(fileStream, ~0); // offset
+        FileStreamPutBack<u32>(fileStream, ~0); // length
     }
 
     u16 key = 0x7C89;
@@ -218,9 +225,10 @@ bool SaveAlle5File(const string& path, const vector<string>& lines)
         // Update the line data with the actual offset
         FileStreamReplace<u32>(fileStream, (lineIdx * 8) + 16 + 4, offset);
 
-        wstring line = Utf8ToWide(lines[lineIdx]);
+        wstring line = MakeWideLine(lines[lineIdx]);
         u16 lineKey = key;
 
+        u32 length = 0;
         for (u32 characterIdx = 0; characterIdx < line.length(); ++characterIdx)
         {
             wchar_t character = line[characterIdx];
@@ -270,12 +278,16 @@ bool SaveAlle5File(const string& path, const vector<string>& lines)
                         FileStreamPutBack<u16>(fileStream, EncryptCharacter(COMMAND_HEADER, lineKey));
                         FileStreamPutBack<u16>(fileStream, EncryptCharacter(itr->first, lineKey));
                         FileStreamPutBack<u16>(fileStream, EncryptCharacter((wchar_t)params.size(), lineKey));
+
                         offset += 6;
+                        length += 3;
 
                         for (u8 paramIdx = 0; paramIdx < params.size(); ++paramIdx)
                         {
                             FileStreamPutBack<u16>(fileStream, EncryptCharacter(params[paramIdx], lineKey));
+
                             offset += 2;
+                            ++length;
                         }
                         break;
                     }
@@ -295,11 +307,13 @@ bool SaveAlle5File(const string& path, const vector<string>& lines)
             }
 
             FileStreamPutBack<u16>(fileStream, EncryptCharacter(character, lineKey));
+
             offset += 2;
+            ++length;
         }
-        // Add NULL termination
-        FileStreamPutBack<u16>(fileStream, EncryptCharacter(0xFFFF, lineKey));
-        offset += 2;
+
+        // Update the line data with the actual length
+        FileStreamReplace<u32>(fileStream, (lineIdx * 8) + 16 + 8, length);
 
         // Increment the key for the next line
         key += 0x2983;

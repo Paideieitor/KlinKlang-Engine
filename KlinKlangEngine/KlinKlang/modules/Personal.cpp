@@ -57,9 +57,9 @@ ReturnState Personal::RenderGUI()
 
 	ImGui::BeginGroup();
 	ImGui::Text("Wild Items");
-	ComboBox(personal, "50%", engine->items, WILD_ITEM_50);
-	ComboBox(personal, "5%", engine->items, WILD_ITEM_5);
-	ComboBox(personal, "1%", engine->items, WILD_ITEM_1);
+	ComboBox(personal, "50%", engine->itemNames, WILD_ITEM_50);
+	ComboBox(personal, "5%", engine->itemNames, WILD_ITEM_5);
+	ComboBox(personal, "1%", engine->itemNames, WILD_ITEM_1);
 	ImGui::EndGroup();
 
 	ImGui::SameLine();
@@ -195,6 +195,12 @@ void Personal::HandleSaveEvent(Event* saveEvent)
 void Personal::ComboBox(PersonalData& personal, const char* label, const std::vector<std::string>& items, PersonalField field)
 {
 	int selected = personal[field];
+	if (selected >= items.size())
+	{
+		InputInt(personal, label, field, 0xFFFF);
+		return;
+	}
+
 	ImGui::SetNextItemWidth(150.0f);
 	if (ImGui::TextInputComboBox(label, items, &selected))
 	{

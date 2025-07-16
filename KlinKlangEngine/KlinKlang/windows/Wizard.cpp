@@ -112,7 +112,7 @@ ReturnState Wizard::RenderGUI()
 		{
 			for (int projectIdx = 0; projectIdx < projectList.size(); ++projectIdx)
 			{
-				if (ImGui::Selectable(LABEL(projectList[selectedIdx].name, projectIdx), selectedIdx == projectIdx))
+				if (ImGui::Selectable(LABEL(projectList[projectIdx].name, projectIdx), selectedIdx == projectIdx))
 					selectedIdx = projectIdx;
 			}
 			ImGui::EndListBox();

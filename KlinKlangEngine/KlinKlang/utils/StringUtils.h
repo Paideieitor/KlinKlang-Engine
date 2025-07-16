@@ -21,6 +21,8 @@ vector<string> StringToStringVector(const string& input, char separator);
 vector<u32> StringToU32Vector(const string& input, char separator);
 
 string LowerCase(const string& input);
+string UpperCase(const string& input);
 
+bool IsNumber(char character);
 
 #endif // _STRING_UTILS_H

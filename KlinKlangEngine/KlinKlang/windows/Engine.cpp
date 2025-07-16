@@ -12,7 +12,6 @@
 #include "Alle5Format.h"
 
 #include "MenuBar.h"
-#include "Patcher.h"
 #include "PokemonSearch.h"
 #include "PokemonForm.h"
 #include "PokemonText.h"
@@ -20,6 +19,12 @@
 #include "Learnset.h"
 #include "Evolution.h"
 #include "Child.h"
+#include "ItemSearch.h"
+#include "Item.h"
+#include "ItemText.h"
+#include "MoveSearch.h"
+#include "Move.h"
+#include "MoveText.h"
 
 #include "Log.h"
 
@@ -41,7 +46,6 @@ Engine::Engine(Project* const project) : project(project)
 
 	// Engine
 	modules.emplace_back(new MenuBar(this, ENGINE_GROUP));
-	modules.emplace_back(new Patcher(this, ENGINE_GROUP));
 	// Pokémon
 	modules.emplace_back(new PokemonSearch(this, POKEMON_GROUP));
 	modules.emplace_back(new PokemonForm(this, POKEMON_GROUP));
@@ -50,6 +54,14 @@ Engine::Engine(Project* const project) : project(project)
 	modules.emplace_back(new Learnset(this, POKEMON_GROUP));
 	modules.emplace_back(new Evolution(this, POKEMON_GROUP));
 	modules.emplace_back(new Child(this, POKEMON_GROUP));
+	// Items
+	modules.emplace_back(new ItemSearch(this, ITEM_GROUP));
+	modules.emplace_back(new Item(this, ITEM_GROUP));
+	modules.emplace_back(new ItemText(this, ITEM_GROUP));
+	// Moves
+	modules.emplace_back(new MoveSearch(this, MOVE_GROUP));
+	modules.emplace_back(new Move(this, MOVE_GROUP));
+	modules.emplace_back(new MoveText(this, MOVE_GROUP));
 }
 
 Engine::~Engine()
@@ -98,6 +110,66 @@ void Engine::SetCurrentPokemon(u32 idx, u32 form)
 	currentPkm = pkm;
 }
 
+void Engine::SetCurrentItem(u32 idx)
+{
+	project->selectedItemIdx = idx;
+	currentItem = &(items[idx]);
+}
+
+void Engine::SetCurrentMove(u32 idx)
+{
+	project->selectedMoveIdx = idx;
+	currentMove = &(moves[idx]);
+}
+
+void Engine::AddMove()
+{
+	moveNames.emplace_back(string("Move ") + to_string(moveNames.size()));
+	u32 moveIdx = (u32)moveNames.size() - 1;
+
+	if (moveIdx >= (u32)moves.size())
+		moves.resize(moveIdx + 1);
+	MoveData& moveData = moves[moveIdx];
+	for (u32 idx = 0; idx < (u32)moveData.size(); ++idx)
+		moveData[idx] = 0;
+
+	if (moveIdx >= (u32)moveNamesMayus.size())
+		moveNamesMayus.resize(moveIdx + 1);
+	moveNamesMayus[moveIdx] = UpperCase(moveNames[moveIdx]);
+
+	if (moveIdx * 3 >= (u32)moveUses.size())
+		moveUses.resize((moveIdx + 1) * 3);
+	string battlePrefix[] = { "", "The wild ", "The foe's " };
+	string battleMessage;
+	battleMessage.reserve(64);
+	for (u32 idx = 0; idx < 3; ++idx)
+	{
+		battleMessage.clear();
+		battleMessage = battlePrefix[idx] + u8"[Pokémon Nick(0)] used\n" + moveNames[moveIdx] + "!";
+		moveUses[(moveIdx * 3) + idx] = battleMessage;
+	}
+
+	if (moveIdx >= (u32)moveDescriptions.size())
+		moveDescriptions.resize((moveIdx + 1));
+	moveDescriptions[moveIdx] = "";
+
+	if (moveIdx >= (u32)moveAnims.size())
+		moveAnims.resize((moveIdx + 1));
+	LoadFileStream(moveAnims[moveIdx], MAKE_FILE_PATH(moveAnimPath, 1));
+
+	SendGroupEvent(MOVE_GROUP);
+}
+
+void LoadText(const string& narcPath, u32 fileID, const string& outputPath, vector<u16>& missingTextFiles)
+{
+	string ctrPath = MAKE_FILE_PATH(narcPath, fileID);
+	if (!PathExists(ctrPath))
+		missingTextFiles.emplace_back(fileID);
+	else
+		CopyFile(ctrPath, outputPath);
+}
+#define LOAD_TEXT(fileID, outputPath) LoadText(ctrTextNarcPath, fileID, outputPath, missingTextFiles)
+
 bool Engine::LoadTextFiles()
 {
 	vector<u16> missingTextFiles;
@@ -124,14 +196,19 @@ bool Engine::LoadTextFiles()
 		missingTextFiles.emplace_back(PKM_DESCRIPTION_FILE_ID);
 		missingTextFiles.emplace_back(PKM_TITLE_FILE_ID);
 
-		missingTextFiles.emplace_back(MOVE_NAME_FILE_ID);
-		missingTextFiles.emplace_back(MOVE_DESCRIPTION_FILE_ID);
-
 		missingTextFiles.emplace_back(TYPE_NAME_FILE_ID);
 
 		missingTextFiles.emplace_back(ABILITY_NAME_FILE_ID);
 
 		missingTextFiles.emplace_back(ITEM_NAME_FILE_ID);
+		missingTextFiles.emplace_back(ITEM_DESCRIPTION_FILE_ID);
+		missingTextFiles.emplace_back(ITEM_NAME_COLOR_FILE_ID);
+		missingTextFiles.emplace_back(ITEM_NAME_PLURAL_FILE_ID);
+
+		missingTextFiles.emplace_back(MOVE_NAME_FILE_ID);
+		missingTextFiles.emplace_back(MOVE_NAME_MAYUS_FILE_ID);
+		missingTextFiles.emplace_back(MOVE_USE_FILE_ID);
+		missingTextFiles.emplace_back(MOVE_DESCRIPTION_FILE_ID);
 	}
 
 	// The file where the Pokémon text data is stored
@@ -139,10 +216,6 @@ bool Engine::LoadTextFiles()
 	string formNamePath = MAKE_FILE_PATH(textNarcPath, PKM_FORM_NAME_FILE_ID);
 	string pkmDescriptionPath = MAKE_FILE_PATH(textNarcPath, PKM_DESCRIPTION_FILE_ID);
 	string pkmTitlePath = MAKE_FILE_PATH(textNarcPath, PKM_TITLE_FILE_ID);
-
-	// The file where the Move text data is stored
-	string moveNamePath = MAKE_FILE_PATH(textNarcPath, MOVE_NAME_FILE_ID);
-	string moveDescriptionPath = MAKE_FILE_PATH(textNarcPath, MOVE_DESCRIPTION_FILE_ID);
 
 	// The file where the Type text data is stored
 	string typeNamePath = MAKE_FILE_PATH(textNarcPath, TYPE_NAME_FILE_ID);
@@ -152,66 +225,39 @@ bool Engine::LoadTextFiles()
 
 	// The file where the Item text data is stored
 	string itemNamePath = MAKE_FILE_PATH(textNarcPath, ITEM_NAME_FILE_ID);
+	string itemDescriptionPath = MAKE_FILE_PATH(textNarcPath, ITEM_DESCRIPTION_FILE_ID);
+	string itemColorPath = MAKE_FILE_PATH(textNarcPath, ITEM_NAME_COLOR_FILE_ID);
+	string itemPluralPath = MAKE_FILE_PATH(textNarcPath, ITEM_NAME_PLURAL_FILE_ID);
+
+	// The file where the Move text data is stored
+	string moveNamePath = MAKE_FILE_PATH(textNarcPath, MOVE_NAME_FILE_ID);
+	string moveNameMayusPath = MAKE_FILE_PATH(textNarcPath, MOVE_NAME_MAYUS_FILE_ID);
+	string moveUsePath = MAKE_FILE_PATH(textNarcPath, MOVE_USE_FILE_ID);
+	string moveDescriptionPath = MAKE_FILE_PATH(textNarcPath, MOVE_DESCRIPTION_FILE_ID);
 
 	// If the missing files are not already set
 	if (!missingTextFiles.size())
 	{
 		// Check if the files we need are already extracted in the CTRMap project
 		// If they are not, add them to the missing files list
+		LOAD_TEXT(PKM_NAME_FILE_ID, pkmNamePath);
+		LOAD_TEXT(PKM_FORM_NAME_FILE_ID, formNamePath);
+		LOAD_TEXT(PKM_DESCRIPTION_FILE_ID, pkmDescriptionPath);
+		LOAD_TEXT(PKM_TITLE_FILE_ID, pkmTitlePath);
 
-		string ctrPkmNamePath = MAKE_FILE_PATH(ctrTextNarcPath, PKM_NAME_FILE_ID);
-		if (!PathExists(ctrPkmNamePath))
-			missingTextFiles.emplace_back(PKM_NAME_FILE_ID);
-		else
-			CopyFile(ctrPkmNamePath, pkmNamePath);
+		LOAD_TEXT(TYPE_NAME_FILE_ID, typeNamePath);
 
-		string ctrFormNamePath = MAKE_FILE_PATH(ctrTextNarcPath, PKM_FORM_NAME_FILE_ID);
-		if (!PathExists(ctrFormNamePath))
-			missingTextFiles.emplace_back(PKM_FORM_NAME_FILE_ID);
-		else
-			CopyFile(ctrFormNamePath, formNamePath);
+		LOAD_TEXT(ABILITY_NAME_FILE_ID, abilityNamePath);
 
-		string ctrPkmDescriptionPath = MAKE_FILE_PATH(ctrTextNarcPath, PKM_DESCRIPTION_FILE_ID);
-		if (!PathExists(ctrPkmDescriptionPath))
-			missingTextFiles.emplace_back(PKM_DESCRIPTION_FILE_ID);
-		else
-			CopyFile(ctrPkmDescriptionPath, pkmDescriptionPath);
+		LOAD_TEXT(ITEM_NAME_FILE_ID, itemNamePath);
+		LOAD_TEXT(ITEM_DESCRIPTION_FILE_ID, itemDescriptionPath);
+		LOAD_TEXT(ITEM_NAME_COLOR_FILE_ID, itemColorPath);
+		LOAD_TEXT(ITEM_NAME_PLURAL_FILE_ID, itemPluralPath);
 
-		string ctrPkmTitlePath = MAKE_FILE_PATH(ctrTextNarcPath, PKM_TITLE_FILE_ID);
-		if (!PathExists(ctrPkmTitlePath))
-			missingTextFiles.emplace_back(PKM_TITLE_FILE_ID);
-		else
-			CopyFile(ctrPkmTitlePath, pkmTitlePath);
-
-		string ctrMoveNamePath = MAKE_FILE_PATH(ctrTextNarcPath, MOVE_NAME_FILE_ID);
-		if (!PathExists(ctrMoveNamePath))
-			missingTextFiles.emplace_back(MOVE_NAME_FILE_ID);
-		else
-			CopyFile(ctrMoveNamePath, moveNamePath);
-
-		string ctrMoveDescriptionPath = MAKE_FILE_PATH(ctrTextNarcPath, MOVE_DESCRIPTION_FILE_ID);
-		if (!PathExists(ctrMoveDescriptionPath))
-			missingTextFiles.emplace_back(MOVE_DESCRIPTION_FILE_ID);
-		else
-			CopyFile(ctrMoveDescriptionPath, moveDescriptionPath);
-
-		string ctrTypeNamePath = MAKE_FILE_PATH(ctrTextNarcPath, TYPE_NAME_FILE_ID);
-		if (!PathExists(ctrTypeNamePath))
-			missingTextFiles.emplace_back(TYPE_NAME_FILE_ID);
-		else
-			CopyFile(ctrTypeNamePath, typeNamePath);
-
-		string ctrAbilityNamePath = MAKE_FILE_PATH(ctrTextNarcPath, ABILITY_NAME_FILE_ID);
-		if (!PathExists(ctrAbilityNamePath))
-			missingTextFiles.emplace_back(ABILITY_NAME_FILE_ID);
-		else
-			CopyFile(ctrAbilityNamePath, abilityNamePath);
-
-		string ctrItemNamePath = MAKE_FILE_PATH(ctrTextNarcPath, ITEM_NAME_FILE_ID);
-		if (!PathExists(ctrItemNamePath))
-			missingTextFiles.emplace_back(ITEM_NAME_FILE_ID);
-		else
-			CopyFile(ctrItemNamePath, itemNamePath);
+		LOAD_TEXT(MOVE_NAME_FILE_ID, moveNamePath);
+		LOAD_TEXT(MOVE_NAME_MAYUS_FILE_ID, moveNameMayusPath);
+		LOAD_TEXT(MOVE_USE_FILE_ID, moveUsePath);
+		LOAD_TEXT(MOVE_DESCRIPTION_FILE_ID, moveDescriptionPath);
 	}
 
 	// Extract the files we are missing
@@ -229,15 +275,20 @@ bool Engine::LoadTextFiles()
 	LoadAlle5File(formNamePath, formNames);
 	LoadAlle5File(pkmDescriptionPath, pkmDescriptions);
 	LoadAlle5File(pkmTitlePath, pkmTitles);
-	// Load relevant Move text data
-	LoadAlle5File(moveNamePath, moveNames);
-	LoadAlle5File(moveDescriptionPath, moveDescriptions);
 	// Load relevant Type text data
 	LoadAlle5File(typeNamePath, types);
 	// Load relevant Ability text data
 	LoadAlle5File(abilityNamePath, abilities);
 	// Load relevant Item text data
-	LoadAlle5File(itemNamePath, items);
+	LoadAlle5File(itemNamePath, itemNames);
+	LoadAlle5File(itemDescriptionPath, itemDescriptions);
+	LoadAlle5File(itemColorPath, itemColors);
+	LoadAlle5File(itemPluralPath, itemPlurals);
+	// Load relevant Move text data
+	LoadAlle5File(moveNamePath, moveNames);
+	LoadAlle5File(moveNameMayusPath, moveNamesMayus);
+	LoadAlle5File(moveUsePath, moveUses);
+	LoadAlle5File(moveDescriptionPath, moveDescriptions);
 
 	return true;
 }
@@ -279,13 +330,7 @@ u32 Engine::LoadDataNarc(const string& narcPath, string& outputPath)
 	}
 
 	// Create the NARC folder if necesary
-	if (PathExists(outputPath))
-	{
-		vector<string> engineFiles = GetFolderElementList(outputPath);
-		for (u16 engineIdx = 0; engineIdx < engineFiles.size(); ++engineIdx)
-			excludeFiles.emplace_back((u16)stoi(engineFiles[engineIdx]));
-	}
-	else if (!CreateFolder(outputPath))
+	if (!PathExists(outputPath) && !CreateFolder(outputPath))
 	{
 		Log(CRITICAL, "Couldn't create %s NARC folder", narcPath.c_str());
 		return 0;
@@ -305,7 +350,7 @@ u32 Engine::LoadDataNarc(const string& narcPath, string& outputPath)
 		return 0;
 	}
 
-	return (u32)extractedFiles + (u32)excludeFiles.size() + 1;
+	return (u32)extractedFiles + (u32)excludeFiles.size();
 }
 
 bool Engine::LoadPokemon(Pokemon& pkm)
@@ -343,43 +388,8 @@ bool Engine::LoadPokemon(Pokemon& pkm)
 	return true;
 }
 
-bool Engine::Start()
+bool Engine::LoadPokemonData()
 {
-	// Extract the text data
-	if (!LoadTextFiles())
-		return false;
-
-	// Extrat the data of every Pokémon
-	int loadedFiles = LoadDataNarc(PERSONAL_NARC_PATH, personalPath);
-	if (loadedFiles < 0)
-		return false;
-	personal.reserve(loadedFiles);
-	for (u32 idx = 0; idx < (u32)loadedFiles; ++idx)
-		personal.push_back(PersonalData());
-
-	loadedFiles = LoadDataNarc(LEARNSET_NARC_PATH, learnsetPath);
-	if (loadedFiles < 0)
-		return false;
-	learnset.reserve(loadedFiles);
-	for (u32 idx = 0; idx < (u32)loadedFiles; ++idx)
-		learnset.push_back(LearnsetData());
-
-	loadedFiles = LoadDataNarc(EVOLUTION_NARC_PATH, evolutionPath);
-	if (loadedFiles < 0)
-		return false;
-	evolution.reserve(loadedFiles);
-	for (u32 idx = 0; idx < (u32)loadedFiles; ++idx)
-		evolution.push_back(EvolutionData());
-
-	loadedFiles = LoadDataNarc(CHILD_NARC_PATH, childPath);
-	if (loadedFiles < 0)
-		return false;
-	child.reserve(loadedFiles);
-	for (u32 idx = 0; idx < (u32)loadedFiles; ++idx)
-		child.push_back(ChildData());
-
-	// Use the loaded files to store all the Pokémon data
-	pokemon.reserve(pkmNames.size());
 	u32 formCount = 0;
 	// Store loaded data in the Pokémon array
 	for (u32 pkmIdx = 0; pkmIdx < (u32)pkmNames.size(); ++pkmIdx)
@@ -395,7 +405,7 @@ bool Engine::Start()
 		// PokéStudio enemies don't have Text index since they don't have a description
 		if (pkm.pokeStudio)
 			pkm.textIdx = 0;
-		
+
 		// Load the data of the Pokémon
 		if (!LoadPokemon(pkm))
 			return false;
@@ -432,8 +442,97 @@ bool Engine::Start()
 		}
 		pokemon.push_back(pkm);
 	}
-
 	SetCurrentPokemon(project->selectedPkmIdx, project->selectedPkmForm);
+
+	return true;
+}
+
+bool Engine::LoadItemData()
+{
+	// Store loaded data in the Item array
+	for (u32 itemIdx = 0; itemIdx < (u32)itemNames.size(); ++itemIdx)
+	{
+		string itemFilePath = MAKE_FILE_PATH(itemPath, itemIdx);
+		if (!LoadItem(items[itemIdx], itemFilePath))
+		{
+			Log(CRITICAL, u8"Item %d lacks item data", itemIdx);
+			return false;
+		}
+	}
+
+	return true;
+}
+
+bool Engine::LoadMoveData()
+{
+	// Store loaded data in the Move array
+	for (u32 moveIdx = 0; moveIdx < (u32)moveNames.size(); ++moveIdx)
+	{
+		string moveFilePath = MAKE_FILE_PATH(movePath, moveIdx);
+		if (moveIdx < (u32)moves.size() && !LoadMove(moves[moveIdx], moveFilePath))
+		{
+			Log(CRITICAL, u8"Move %d lacks move data", moveIdx);
+			return false;
+		}
+
+		string moveAnimFilePath = MAKE_FILE_PATH(moveAnimPath, moveIdx);
+		LoadFileStream(moveAnims[moveIdx], moveAnimFilePath);
+	}
+
+	return true;
+}
+
+bool Engine::Start()
+{
+	// Extract the text data
+	if (!LoadTextFiles())
+		return false;
+
+	// Extrat the data of every Pokémon
+	int loadedFiles = LoadDataNarc(PERSONAL_NARC_PATH, personalPath);
+	if (loadedFiles < 0)
+		return false;
+	personal.resize(loadedFiles);
+
+	loadedFiles = LoadDataNarc(LEARNSET_NARC_PATH, learnsetPath);
+	if (loadedFiles < 0)
+		return false;
+	learnset.resize(loadedFiles);
+
+	loadedFiles = LoadDataNarc(EVOLUTION_NARC_PATH, evolutionPath);
+	if (loadedFiles < 0)
+		return false;
+	evolution.resize(loadedFiles);
+
+	loadedFiles = LoadDataNarc(CHILD_NARC_PATH, childPath);
+	if (loadedFiles < 0)
+		return false;
+	child.resize(loadedFiles);
+
+	if (!LoadPokemonData())
+		return false;
+
+	loadedFiles = LoadDataNarc(ITEM_NARC_PATH, itemPath);
+	if (loadedFiles < 0)
+		return false;
+	items.resize(loadedFiles);
+
+	if (!LoadItemData())
+		return false;
+
+	loadedFiles = LoadDataNarc(MOVE_NARC_PATH, movePath);
+	if (loadedFiles < 0)
+		return false;
+	moves.resize(loadedFiles);
+
+	loadedFiles = LoadDataNarc(MOVE_ANIM_NARC_PATH, moveAnimPath);
+	if (loadedFiles < 0)
+		return false;
+	moveAnims.resize(loadedFiles);
+
+	if (!LoadMoveData())
+		return false;
+
 	return true;
 }
 
@@ -456,24 +555,18 @@ bool Engine::LoadPersonal(PersonalData& personalData, const string& file)
 	personalData[EVOLUTION_STAGE] = (int)FileStreamReadUpdate<u8>(fileStream, currentByte);
 
 	u16 evYield = FileStreamReadUpdate<u16>(fileStream, currentByte);
-	u16 mask = 0x0003;
 	for (u32 stat = 0; stat < STAT_COUNT; ++stat)
-	{
-		personalData[(u32)EV_HP + stat] = (u8)((evYield & mask) >> (stat * 2));
-		mask = mask << 2;
-	}
+		personalData[(u32)EV_HP + stat] = (u8)((evYield >> (stat * 2)) & 0x0003);
 	personalData[GROUNDED_SPRITE] = (int)((evYield & 0x1000) != 0);
 
 	u16 expandedAbilBits[ABILITY_COUNT];
 	for (u32 item = 0; item < WILD_ITEM_COUNT; ++item)
 	{
 		u16 itemValue = FileStreamReadUpdate<u16>(fileStream, currentByte);
-		if (expandedAbilities)
-		{
-			expandedAbilBits[item] = itemValue & 0xC000;
-			// Remove the ability related bits from the item value
-			itemValue -= expandedAbilBits[item];
-		}
+		expandedAbilBits[item] = itemValue & 0xC000;
+		// Remove the ability related bits from the item value
+		itemValue -= expandedAbilBits[item];
+
 		personalData[(u32)WILD_ITEM_50 + item] = (int)itemValue;
 	}
 
@@ -490,11 +583,9 @@ bool Engine::LoadPersonal(PersonalData& personalData, const string& file)
 	for (u32 ability = 0; ability < ABILITY_COUNT; ++ability)
 	{
 		u16 abilityValue = FileStreamReadUpdate<u8>(fileStream, currentByte);
-		if (expandedAbilities)
-		{
-			// Add the ability bits stored in the item slot to the ability value
-			abilityValue += (expandedAbilBits[ability] >> 6);
-		}
+		// Add the ability bits stored in the item slot to the ability value
+		abilityValue += (expandedAbilBits[ability] >> 6);
+
 		personalData[(u32)ABILITY_1 + ability] = (int)abilityValue;
 	}
 
@@ -554,12 +645,11 @@ bool Engine::SavePersonal(const PersonalData& personalData, const string& file)
 	for (u32 item = 0; item < WILD_ITEM_COUNT; ++item)
 	{
 		u16 itemValue = (u16)personalData[(u32)WILD_ITEM_50 + item];
-		if (expandedAbilities)
-		{
-			itemValue &= 0x3FFF;
-			// Save the 2 most significant ability bits at the end of the item value
-			itemValue += ((u16)personalData[(u32)ABILITY_1 + item] & 0x0300) << 6;
-		}
+
+		itemValue &= 0x3FFF;
+		// Save the 2 most significant ability bits at the end of the item value
+		itemValue += ((u16)personalData[(u32)ABILITY_1 + item] & 0x0300) << 6;
+
 		FileStreamPutBack<u16>(fileStream, itemValue);
 	}
 
@@ -725,6 +815,287 @@ bool Engine::SaveChild(const ChildData& childData, const string& file)
 	return true;
 }
 
+bool Engine::LoadItem(ItemData& itemData, const string& file)
+{
+	FileStream fileStream;
+	if (!LoadFileStream(fileStream, file))
+		return false;
+
+	u32 currentByte = 0;
+
+	itemData[PRICE] = (int)FileStreamReadUpdate<u16>(fileStream, currentByte);
+
+	itemData[HELD_EFFECT] = (int)FileStreamReadUpdate<u8>(fileStream, currentByte);
+	itemData[HELD_PARAM] = (int)FileStreamReadUpdate<u8>(fileStream, currentByte);
+	itemData[NATURAL_GIFT_EFFECT] = (int)FileStreamReadUpdate<u8>(fileStream, currentByte);
+	itemData[FLING_EFFECT] = (int)FileStreamReadUpdate<u8>(fileStream, currentByte);
+	itemData[FLING_POWER] = (int)FileStreamReadUpdate<u8>(fileStream, currentByte);
+	itemData[NATURAL_GIFT_POWER] = (int)FileStreamReadUpdate<u8>(fileStream, currentByte);
+
+	u16 packed = FileStreamReadUpdate<u16>(fileStream, currentByte);
+	itemData[PACKED_FLAG_1] = (packed & 0x20) >> 5;
+	itemData[PACKED_FLAG_2] = (packed & 0x40) >> 6;
+	itemData[POCKET_FIELD] = (packed & 0x780) >> 7;
+	itemData[NATURAL_GIFT_TYPE] = packed & 0x1F;
+
+	itemData[EFFECT_FIELD] = (int)FileStreamReadUpdate<u8>(fileStream, currentByte);
+	itemData[EFFECT_BATTLE] = (int)FileStreamReadUpdate<u8>(fileStream, currentByte);
+	itemData[HAS_BATTLE_STATS] = (int)FileStreamReadUpdate<u8>(fileStream, currentByte);
+	itemData[BATTLE_POCKET] = (int)FileStreamReadUpdate<u8>(fileStream, currentByte);
+	itemData[CONSUMABLE] = (int)FileStreamReadUpdate<u8>(fileStream, currentByte);
+	itemData[SORT_IDX] = (int)FileStreamReadUpdate<u8>(fileStream, currentByte);
+
+	if (itemData[HAS_BATTLE_STATS] == 0)
+	{
+		for (int field = CURE_SLEEP; field < ITEMDATA_MAX; ++field)
+			itemData[field] = 0;
+	}
+	else
+	{
+		u8 cureInflict = (int)FileStreamReadUpdate<u8>(fileStream, currentByte);
+		for (int field = CURE_SLEEP; field <= CURE_GSP; ++field)
+		{
+			u8 index = field - CURE_SLEEP;
+			itemData[field] = (cureInflict & (0x1 << index)) >> index;
+		}
+
+		u32 boosts = FileStreamReadUpdate<u32>(fileStream, currentByte);
+		for (int field = BOOST_REVIVE; field <= BOOST_EVOSTONE; ++field)
+		{
+			u32 index = field - BOOST_REVIVE;
+			itemData[field] = (boosts & (0x1 << index)) >> index;
+		}
+		for (int field = BOOST_ATK; field <= BOOST_ACC; ++field)
+		{
+			u32 index = ((field - BOOST_ATK) + 1) * 4;
+			itemData[field] = (boosts & (0xF << index)) >> index;
+		}
+		itemData[BOOST_CRIT] = (boosts & 0x30000000) >> 28;
+		itemData[BOOST_PP] = (boosts & 0x40000000) >> 30;
+		itemData[BOOST_PP_MAX] = (boosts & 0x80000000) >> 31;
+
+		u16 functions = FileStreamReadUpdate<u16>(fileStream, currentByte);
+		for (int field = PP_REPLENISH; field <= FRIENDSHIP_ADD_3; ++field)
+		{
+			u16 index = field - PP_REPLENISH;
+			itemData[field] = (boosts & (0x1 << index)) >> index;
+		}
+
+		itemData[ITEM_EV_HP] = (int)FileStreamReadUpdate<u8>(fileStream, currentByte);
+		itemData[ITEM_EV_ATK] = (int)FileStreamReadUpdate<u8>(fileStream, currentByte);
+		itemData[ITEM_EV_DEF] = (int)FileStreamReadUpdate<u8>(fileStream, currentByte);
+		itemData[ITEM_EV_SPE] = (int)FileStreamReadUpdate<u8>(fileStream, currentByte);
+		itemData[ITEM_EV_SPA] = (int)FileStreamReadUpdate<u8>(fileStream, currentByte);
+		itemData[ITEM_EV_SPD] = (int)FileStreamReadUpdate<u8>(fileStream, currentByte);
+
+		itemData[HEAL_AMOUNT] = (int)FileStreamReadUpdate<u8>(fileStream, currentByte);
+		itemData[PP_GAIN] = (int)FileStreamReadUpdate<u8>(fileStream, currentByte);
+
+		itemData[FRIENDSHIP_1] = (int)FileStreamReadUpdate<u8>(fileStream, currentByte);
+		itemData[FRIENDSHIP_2] = (int)FileStreamReadUpdate<u8>(fileStream, currentByte);
+		itemData[FRIENDSHIP_3] = (int)FileStreamReadUpdate<u8>(fileStream, currentByte);
+
+		itemData[UNKNOWN_1] = (int)FileStreamReadUpdate<u8>(fileStream, currentByte);
+		itemData[UNKNOWN_2] = (int)FileStreamReadUpdate<u8>(fileStream, currentByte);
+	}
+
+	ReleaseFileStream(fileStream);
+	return true;
+}
+
+bool Engine::SaveItem(const ItemData& itemData, const string& file)
+{
+	FileStream fileStream;
+	if (!LoadEmptyFileStream(fileStream))
+		return false;
+
+	FileStreamPutBack<u16>(fileStream, (u16)itemData[PRICE]);
+
+	FileStreamPutBack<u8>(fileStream, (u8)itemData[HELD_EFFECT]);
+	FileStreamPutBack<u8>(fileStream, (u8)itemData[HELD_PARAM]);
+	FileStreamPutBack<u8>(fileStream, (u8)itemData[NATURAL_GIFT_EFFECT]);
+	FileStreamPutBack<u8>(fileStream, (u8)itemData[FLING_EFFECT]);
+	FileStreamPutBack<u8>(fileStream, (u8)itemData[FLING_POWER]);
+	FileStreamPutBack<u8>(fileStream, (u8)itemData[NATURAL_GIFT_POWER]);
+
+	u16 packed = (itemData[PACKED_FLAG_1] << 5) & 0x20;
+	packed |= (itemData[PACKED_FLAG_2] << 6) & 0x40;
+	packed |= (itemData[POCKET_FIELD] << 7) & 0x780;
+	packed |= itemData[NATURAL_GIFT_TYPE] & 0x1F;
+	FileStreamPutBack<u16>(fileStream, packed);
+
+	FileStreamPutBack<u8>(fileStream, (u8)itemData[EFFECT_FIELD]);
+	FileStreamPutBack<u8>(fileStream, (u8)itemData[EFFECT_BATTLE]);
+	FileStreamPutBack<u8>(fileStream, (u8)itemData[HAS_BATTLE_STATS]);
+	FileStreamPutBack<u8>(fileStream, (u8)itemData[BATTLE_POCKET]);
+	FileStreamPutBack<u8>(fileStream, (u8)itemData[CONSUMABLE]);
+	FileStreamPutBack<u8>(fileStream, (u8)itemData[SORT_IDX]);
+
+	if (itemData[HAS_BATTLE_STATS] == 0)
+	{
+		for (int field = CURE_SLEEP; field < ITEMDATA_MAX; ++field)
+			FileStreamPutBack<u8>(fileStream, 0);
+	}
+	else
+	{
+		u8 cureInflict = 0;
+		for (int field = CURE_SLEEP; field <= CURE_GSP; ++field)
+		{
+			u8 index = field - CURE_SLEEP;
+			cureInflict |= (itemData[field] << index) & (0x1 << index);
+		}
+		FileStreamPutBack<u16>(fileStream, cureInflict);
+
+		u32 boosts = 0;
+		for (int field = BOOST_REVIVE; field <= BOOST_EVOSTONE; ++field)
+		{
+			u32 index = field - BOOST_REVIVE;
+			boosts |= (itemData[field] << index) & (0x1 << index);
+		}
+		for (int field = BOOST_ATK; field <= BOOST_ACC; ++field)
+		{
+			u32 index = ((field - BOOST_ATK) + 1) * 4;
+			boosts |= (itemData[field] << index) & (0xF << index);
+		}
+		boosts |= (itemData[BOOST_CRIT] << 28) & 0x30000000;
+		boosts |= (itemData[BOOST_PP] << 30) & 0x40000000;
+		boosts |= (itemData[BOOST_PP_MAX] << 31) & 0x80000000;
+		FileStreamPutBack<u16>(fileStream, boosts);
+
+		u16 functions = 0;
+		for (int field = PP_REPLENISH; field <= FRIENDSHIP_ADD_3; ++field)
+		{
+			u16 index = field - PP_REPLENISH;
+			functions |= (itemData[field] << index) & (0x1 << index);
+		}
+		FileStreamPutBack<u16>(fileStream, functions);
+
+		FileStreamPutBack<u8>(fileStream, (u8)itemData[ITEM_EV_HP]);
+		FileStreamPutBack<u8>(fileStream, (u8)itemData[ITEM_EV_ATK]);
+		FileStreamPutBack<u8>(fileStream, (u8)itemData[ITEM_EV_DEF]);
+		FileStreamPutBack<u8>(fileStream, (u8)itemData[ITEM_EV_SPE]);
+		FileStreamPutBack<u8>(fileStream, (u8)itemData[ITEM_EV_SPA]);
+		FileStreamPutBack<u8>(fileStream, (u8)itemData[ITEM_EV_SPD]);
+
+		FileStreamPutBack<u8>(fileStream, (u8)itemData[HEAL_AMOUNT]);
+		FileStreamPutBack<u8>(fileStream, (u8)itemData[PP_GAIN]);
+
+		FileStreamPutBack<u8>(fileStream, (u8)itemData[FRIENDSHIP_1]);
+		FileStreamPutBack<u8>(fileStream, (u8)itemData[FRIENDSHIP_2]);
+		FileStreamPutBack<u8>(fileStream, (u8)itemData[FRIENDSHIP_3]);
+
+		FileStreamPutBack<u8>(fileStream, (u8)itemData[UNKNOWN_1]);
+		FileStreamPutBack<u8>(fileStream, (u8)itemData[UNKNOWN_2]);
+	}
+
+	SaveFileStream(fileStream, file);
+	ReleaseFileStream(fileStream);
+	return true;
+}
+
+bool Engine::LoadMove(MoveData& moveData, const string& file)
+{
+	FileStream fileStream;
+	if (!LoadFileStream(fileStream, file))
+		return false;
+
+	u32 currentByte = 0;
+
+	moveData[MOVE_TYPE] = (int)FileStreamReadUpdate<u8>(fileStream, currentByte);
+	moveData[QUALITY] = (int)FileStreamReadUpdate<u8>(fileStream, currentByte);
+	moveData[CATEGORY] = (int)FileStreamReadUpdate<u8>(fileStream, currentByte);
+	moveData[POWER] = (int)FileStreamReadUpdate<u8>(fileStream, currentByte);
+	moveData[ACCURACY] = (int)FileStreamReadUpdate<u8>(fileStream, currentByte);
+	moveData[BASE_PP] = (int)FileStreamReadUpdate<u8>(fileStream, currentByte);
+	moveData[PRIORITY] = (int)FileStreamReadUpdate<char>(fileStream, currentByte);
+
+	u8 hitMinMax = FileStreamReadUpdate<u8>(fileStream, currentByte);
+	moveData[HIT_MIN] = hitMinMax & 0x0F;
+	moveData[HIT_MAX] = (hitMinMax & 0xF0) >> 4;
+
+	moveData[CONDITION] = (int)FileStreamReadUpdate<u16>(fileStream, currentByte);
+	moveData[CONDITION_CHANCE] = (int)FileStreamReadUpdate<u8>(fileStream, currentByte);
+	moveData[CONDITION_DURATION] = (int)FileStreamReadUpdate<u8>(fileStream, currentByte);
+
+	moveData[TURN_MIN] = (int)FileStreamReadUpdate<u8>(fileStream, currentByte);
+	moveData[TURN_MAX] = (int)FileStreamReadUpdate<u8>(fileStream, currentByte);
+
+	moveData[CRIT_STAGE] = (int)FileStreamReadUpdate<u8>(fileStream, currentByte);
+	moveData[FLINCH_RATE] = (int)FileStreamReadUpdate<u8>(fileStream, currentByte);
+
+	moveData[BEHAVIOR] = (int)FileStreamReadUpdate<u16>(fileStream, currentByte);
+
+	moveData[RECOIL] = (int)FileStreamReadUpdate<char>(fileStream, currentByte);
+	moveData[HEAL] = (int)FileStreamReadUpdate<u8>(fileStream, currentByte);
+	moveData[TARGET] = (int)FileStreamReadUpdate<u8>(fileStream, currentByte);
+
+	for (u32 statChange = 0; statChange < 3; ++statChange)
+		moveData[STAT_CHANGE_1 + statChange] = (int)FileStreamReadUpdate<u8>(fileStream, currentByte);
+	for (u32 statChange = 0; statChange < 3; ++statChange)
+		moveData[STAT_CHANGE_VOLUME_1 + statChange] = (int)FileStreamReadUpdate<char>(fileStream, currentByte);
+	for (u32 statChange = 0; statChange < 3; ++statChange)
+		moveData[STAT_CHANGE_CHANCE_1 + statChange] = (int)FileStreamReadUpdate<u8>(fileStream, currentByte);
+
+	moveData[PADDING] = (int)FileStreamReadUpdate<u16>(fileStream, currentByte);
+
+	u32 flags = FileStreamReadUpdate<u32>(fileStream, currentByte);
+	for (u32 moveFlag = 0; moveFlag < sizeof(u32) * 8; ++moveFlag)
+		moveData[IS_CONTACT + moveFlag] = (flags & (1 << moveFlag)) != 0;
+
+	ReleaseFileStream(fileStream);
+	return true;
+}
+
+bool Engine::SaveMove(const MoveData& moveData, const string& file)
+{
+	FileStream fileStream;
+	if (!LoadEmptyFileStream(fileStream))
+		return false;
+
+	FileStreamPutBack<u8>(fileStream, (u8)moveData[MOVE_TYPE]);
+	FileStreamPutBack<u8>(fileStream, (u8)moveData[QUALITY]);
+	FileStreamPutBack<u8>(fileStream, (u8)moveData[CATEGORY]);
+	FileStreamPutBack<u8>(fileStream, (u8)moveData[POWER]);
+	FileStreamPutBack<u8>(fileStream, (u8)moveData[ACCURACY]);
+	FileStreamPutBack<u8>(fileStream, (u8)moveData[BASE_PP]);
+	FileStreamPutBack<char>(fileStream, (char)moveData[PRIORITY]);
+
+	u8 hitMinMax = (u8)moveData[HIT_MIN] + ((u8)moveData[HIT_MAX] << 4);
+	FileStreamPutBack<u8>(fileStream, hitMinMax);
+
+	FileStreamPutBack<u16>(fileStream, (u16)moveData[CONDITION]);
+	FileStreamPutBack<u8>(fileStream, (u8)moveData[CONDITION_CHANCE]);
+	FileStreamPutBack<u8>(fileStream, (u8)moveData[CONDITION_DURATION]);
+	FileStreamPutBack<u8>(fileStream, (u8)moveData[TURN_MIN]);
+	FileStreamPutBack<u8>(fileStream, (u8)moveData[TURN_MAX]);
+
+	FileStreamPutBack<u8>(fileStream, (u8)moveData[CRIT_STAGE]);
+	FileStreamPutBack<u8>(fileStream, (u8)moveData[FLINCH_RATE]);
+	FileStreamPutBack<u16>(fileStream, (u16)moveData[BEHAVIOR]);
+	FileStreamPutBack<char>(fileStream, (char)moveData[RECOIL]);
+	FileStreamPutBack<u8>(fileStream, (u8)moveData[HEAL]);
+	FileStreamPutBack<u8>(fileStream, (u8)moveData[TARGET]);
+
+	for (u32 statChange = 0; statChange < 3; ++statChange)
+		FileStreamPutBack<u8>(fileStream, (u8)moveData[STAT_CHANGE_1 + statChange]);
+	for (u32 statChange = 0; statChange < 3; ++statChange)
+		FileStreamPutBack<char>(fileStream, (char)moveData[STAT_CHANGE_VOLUME_1 + statChange]);
+	for (u32 statChange = 0; statChange < 3; ++statChange)
+		FileStreamPutBack<u8>(fileStream, (u8)moveData[STAT_CHANGE_CHANCE_1 + statChange]);
+
+	FileStreamPutBack<u16>(fileStream, (u16)moveData[PADDING]);
+
+	u32 flags = 0;
+	for (u32 moveFlag = 0; moveFlag < sizeof(u32) * 8; ++moveFlag)
+		if (moveData[IS_CONTACT + moveFlag])
+			flags |= (1 << moveFlag);
+	FileStreamPutBack<u32>(fileStream, flags);
+
+	SaveFileStream(fileStream, file);
+	ReleaseFileStream(fileStream);
+	return true;
+}
+
 void Engine::HandleReverseEvent()
 {
 	if (!reverseEvents.size())
@@ -738,6 +1109,17 @@ void Engine::HandleReverseEvent()
 	reverseEvents.pop_back();
 }
 
+void Engine::SendGroupEvent(u32 group)
+{
+	for (u32 idx = 0; idx < (u32)modules.size(); ++idx)
+	{
+		if (modules[idx]->group == group)
+		{
+			modules[idx]->HandleGroupEvent(nullptr);
+		}
+	}
+}
+
 void Engine::Save()
 {
 	for (u32 idx = 0; idx < (u32)saveEvents.size(); ++idx)
@@ -745,209 +1127,7 @@ void Engine::Save()
 		Event* saveEvent = &(saveEvents[idx]);
 		modules[saveEvent->type]->HandleSaveEvent(saveEvent);
 	}
-
-	SaveEnabledPatches();
+	saveEvents.clear();
 
 	SaveProjectSettings(*project);
-}
-
-void Engine::LoadPatches(bool reload)
-{
-	// Save the enabled state of the old patches before deleting the data when reloading
-	if (reload)
-		SaveEnabledPatches();
-
-	patches.clear();
-	// Delete any reverse event that affects the Patcher module
-	for (u32 eventIdx = 0; eventIdx < (u32)reverseEvents.size(); ++eventIdx)
-	{
-		if (reverseEvents[eventIdx].type == patchesModuleIdx)
-		{
-			reverseEvents.erase(reverseEvents.begin() + eventIdx);
-			--eventIdx;
-		}
-	}
-
-	// Check that patches can be installed to CTRMap
-	string ctrPatchesFolder = project->ctrMapProjectPath + PATH_SEPARATOR + CTRMAP_PATCHES_PATH;
-	if (!PathExists(ctrPatchesFolder))
-	{
-		patchesEnabled = false;
-		return;
-	}
-	patchesEnabled = true;
-
-	// Load each patch in the patches folder
-	vector<string> patchesNames = GetFolderElementList(PATCHES_PATH);
-	for (u32 patchIdx = 0; patchIdx < (u32)patchesNames.size(); ++patchIdx)
-	{
-		Patch patch;
-		patch.name = patchesNames[patchIdx];
-
-		string patchPath = string(PATCHES_PATH) + PATH_SEPARATOR + patch.name + PATH_SEPARATOR + KLANG_PATH;
-		if (!LoadKlang(patch.settings, patchPath))
-		{
-			Log(WARNING, "Couldn't load %s patch", patch.name);
-			break;
-		}
-
-		// If the patch was enabled before loading, keep it that way
-		for (u32 enabledIdx = 0; enabledIdx < (u32)project->enabledPatches.size(); ++enabledIdx)
-		{
-			if (patch.name == project->enabledPatches[enabledIdx])
-			{
-				patch.enabled = true;
-				break;
-			}
-		}
-
-		patches.push_back(patch);
-	}
-}
-
-enum CompileType
-{
-	DONT_COMPILE = 0,
-	CPP = 1,
-	ARM = 2,
-};
-void Engine::BuildPatches()
-{
-	if (!patchesEnabled)
-		return;
-
-	for (u32 patchIdx = 0; patchIdx < (u32)patches.size(); ++patchIdx)
-	{
-		Patch& patch = patches[patchIdx];
-		if (patch.enabled)
-		{
-			string patchPath = string(PATCHES_PATH) + PATH_SEPARATOR + patch.name;
-
-			string esdbPath;
-			vector<string> pathFiles = GetFolderElementList(patchPath);
-			for (u32 fileIdx = 0; fileIdx < (u32)pathFiles.size(); ++fileIdx)
-			{
-				string extension = LowerCase(GetFileExtension(pathFiles[fileIdx]));
-				if (extension == "yml")
-				{
-					esdbPath = patchPath + PATH_SEPARATOR + pathFiles[fileIdx];
-					break;
-				}
-			}
-			if (esdbPath.empty())
-			{
-				Log(WARNING, "%s patch is missing an ESDB!", patch.name.c_str());
-				continue;
-			}
-
-			string buildPath = patchPath + PATH_SEPARATOR + "build";
-			CreateFolder(buildPath);
-
-			FileStream fileStream;
-			LoadEmptyFileStream(fileStream);
-
-			string sourcePath = patchPath + PATH_SEPARATOR + "source";
-			vector<string> sourceFiles = GetFolderElementList(sourcePath);
-
-			// Compile each source file
-			vector<string> elfFiles;
-			for (u32 fileIdx = 0; fileIdx < (u32)sourceFiles.size(); ++fileIdx)
-			{
-				string extension = LowerCase(GetFileExtension(sourceFiles[fileIdx]));
-
-				CompileType compType = DONT_COMPILE;
-				if (extension == "cpp")
-					compType = CPP;
-				else if (extension == "s")
-					compType = ARM;
-				else
-					continue;
-
-				string fileName = sourceFiles[fileIdx].substr(0, sourceFiles[fileIdx].length() - extension.length() - 1);
-				
-				string compileCommand;
-				if (project->compilerPath.length())
-					compileCommand += project->compilerPath + PATH_SEPARATOR;
-				compileCommand += "arm-none-eabi-g++ ";
-				compileCommand += GetAbsolutePath(sourcePath) + PATH_SEPARATOR;
-				compileCommand += sourceFiles[fileIdx] + " ";
-
-				string elfPath = buildPath + PATH_SEPARATOR;
-				switch (compType)
-				{
-				case CPP:
-				{
-					elfPath += fileName + ".o";
-
-					compileCommand += string("-I ") + project->extLibPath + " ";
-					compileCommand += string("-I ") + project->libRPMPath + " ";
-					compileCommand += string("-I ") + project->nkPath + " ";
-					compileCommand += string("-I ") + project->swanPath + " ";
-					compileCommand += string("-o ") + elfPath + " ";
-					compileCommand += "-r -mthumb -march=armv5t -Os";
-
-					break;
-				}
-				case ARM:
-				{
-					elfPath += fileName + "ARM.o";
-
-					compileCommand += string("-o ") + elfPath + " ";
-					compileCommand += "-r -mthumb -march=armv5t -Os";
-
-					break;
-				}
-				}
-				compileCommand += "\n";
-
-				elfFiles.push_back(elfPath);
-				FileStreamBufferWriteBack(fileStream, (u8*)compileCommand.c_str(), compileCommand.length());
-			}
-
-			// Merge all the compiled files in a single ELF file
-			string elfPath = buildPath + PATH_SEPARATOR + patch.name + ".elf";
-			string mergeCommand;
-			if (project->compilerPath.length())
-				mergeCommand += project->compilerPath + PATH_SEPARATOR;
-			mergeCommand += "arm-none-eabi-ld -r ";
-			mergeCommand += string("-o ") + elfPath + " ";
-			for (u32 elfIdx = 0; elfIdx < (u32)elfFiles.size(); ++elfIdx)
-				mergeCommand += elfFiles[elfIdx] + " ";
-			mergeCommand += "\n";
-			FileStreamBufferWriteBack(fileStream, (u8*)mergeCommand.c_str(), mergeCommand.length());
-
-			string dllPath = project->ctrMapProjectPath + PATH_SEPARATOR + CTRMAP_PATCHES_PATH + PATH_SEPARATOR + patch.name + ".dll";
-
-			// Link the patch using CTRMap
-			string linkCommand;
-			if (project->javaPath.length())
-				linkCommand += project->javaPath + PATH_SEPARATOR;
-			linkCommand += "java ";
-			linkCommand += string("-cp ") + project->ctrMapPath + PATH_SEPARATOR + "CTRMap.jar ";
-			linkCommand += "rpm.cli.RPMTool ";
-			linkCommand += string("-i ") + elfPath + " ";
-			linkCommand += string("-o ") + dllPath + " ";
-			linkCommand += string("--esdb ") + esdbPath + " ";
-			linkCommand += "--fourcc DLXF --generate-relocations";
-			linkCommand += "\n";
-			FileStreamBufferWriteBack(fileStream, (u8*)linkCommand.c_str(), linkCommand.length());
-
-			string buildFile = patchPath + PATH_SEPARATOR + patch.name;
-#ifdef _WIN32
-			buildFile += ".bat";
-#else
-			buildFile += ".sh";
-#endif
-			SaveFileStream(fileStream, buildFile);
-			system(buildFile.c_str());
-		}
-	}
-}
-
-void Engine::SaveEnabledPatches()
-{
-	project->enabledPatches.clear();
-	for (u32 patchIdx = 0; patchIdx < (u32)patches.size(); ++patchIdx)
-		if (patches[patchIdx].enabled)
-			project->enabledPatches.push_back(patches[patchIdx].name);
 }

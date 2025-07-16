@@ -145,6 +145,9 @@ vector<pair<u32, int>> Learnset::GetOrderedLearnset(const LearnsetData& learnset
 void Learnset::ComboBox(LearnsetData& learnset, const char* label, const std::vector<std::string>& items, u32 idx)
 {
 	int selected = learnset[idx][LEARN_MOVE_ID];
+	if (selected >= items.size())
+		selected = 0;
+
 	ImGui::SetNextItemWidth(150.0f);
 	if (ImGui::TextInputComboBox(label, items, &selected))
 	{

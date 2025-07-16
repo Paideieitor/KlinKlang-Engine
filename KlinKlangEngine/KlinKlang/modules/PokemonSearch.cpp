@@ -419,6 +419,8 @@ bool PokemonSearch::ComboBox(const char* label, const std::vector<std::string>& 
 	int selected = params[field];
 	if (params[field] == nullValue)
 		selected = 0;
+	if (selected >= items.size())
+		return InputInt(label, 0xFFFF, params, field, nullValue, eventID);
 
 	ImGui::BeginDisabled(params[field] == nullValue);
 	ImGui::SetNextItemWidth(150.0f);
@@ -494,7 +496,7 @@ bool PokemonSearch::CheckBox(const char* label, int* params, u32 field, int null
 void PokemonSearch::AdvancedSearchMenu()
 {
 	bool search = false;
-	ImGui::Begin(u8"Advanced Search", &advancedSearchMenu);
+	ImGui::Begin(u8"Pokémon Advanced Search", &advancedSearchMenu);
 
 	ImGui::BeginGroup();
 	ImGui::Text("Personal");
@@ -516,7 +518,7 @@ void PokemonSearch::AdvancedSearchMenu()
 	if (PERSONAL_CHECK_BOX("Grounded Sprite", GROUNDED_SPRITE))
 		search = true;
 
-	if (PERSONAL_COMBO_BOX("Wild Item", engine->items, WILD_ITEM_50))
+	if (PERSONAL_COMBO_BOX("Wild Item", engine->itemNames, WILD_ITEM_50))
 		search = true;
 
 	if (PERSONAL_INPUT_INT("Sex Chance", SEX_CHANCE, 255))
@@ -621,7 +623,7 @@ void PokemonSearch::AdvancedSearchMenu()
 	case EVOLVE_LEVELUP_ITEM_HELD_NIGHT:
 	case EVOLVE_ITEM_USE_M:
 	case EVOLVE_ITEM_USE_F:
-		if (EVOLUTION_COMBO_BOX("Item##Evolution", engine->items, EVOLUTION_PARAM))
+		if (EVOLUTION_COMBO_BOX("Item##Evolution", engine->itemNames, EVOLUTION_PARAM))
 			search = true;
 		break;
 		// Beauty

@@ -8,9 +8,11 @@ using namespace std;
 
 #define ENGINE_GROUP 0u
 #define POKEMON_GROUP 1u
-#define MOVE_GROUP 2u
-#define ENCOUNTER_GROUP 3u
-#define TRAINER_GROUP 4u
+#define ITEM_GROUP 2u
+#define MOVE_GROUP 3u
+#define ENCOUNTER_GROUP 4u
+#define TRAINER_GROUP 5u
+
 
 #define SETTINGS_NAME "settings"
 	#define DEFAULT_WINDOW_WIDTH 1440u
@@ -25,6 +27,8 @@ using namespace std;
 	#define DEFAULT_SELECTED_PKM_IDX 0u
 	#define DEFAULT_SELECTED_PKM_FORM 0u
 	#define DEFAULT_SHOW_POKESTUDIO false
+	#define DEFAULT_SELECTED_ITEM_IDX 0u
+	#define DEFAULT_SELECTED_MOVE_IDX 0u
 	#define DEFAULT_MAX_EVENTS 2000u
 	#define DEFAULT_COMPILER_PATH ""
 	#define DEFAULT_JAVA_PATH ""

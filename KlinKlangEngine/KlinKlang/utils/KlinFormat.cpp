@@ -28,7 +28,7 @@ void LoadKlin(KlinHandler& handler, const string& path)
 
 		for (u32 value = KLIN_NULL + 1; value < KLIN_MAX_VALUE; ++value)
 		{
-			if (lineStr.find(KlinParams[value].name) == 0)
+			if (lineStr.find(string(KlinParams[value].name) + KLIN_SEPARATOR) == 0)
 			{
 				string data = lineStr.substr(strlen(KlinParams[value].name) + sizeof(KLIN_SEPARATOR) - 1);
 				data.pop_back();

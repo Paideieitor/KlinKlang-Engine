@@ -32,6 +32,12 @@
     <Filter Include="KlinKlang\Modules\Engine">
       <UniqueIdentifier>{86f991fc-9085-4985-8454-b5846a3d22b1}</UniqueIdentifier>
     </Filter>
+    <Filter Include="KlinKlang\Modules\Items">
+      <UniqueIdentifier>{d264045b-012f-44de-9555-68b5169287b1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="KlinKlang\Modules\Moves">
+      <UniqueIdentifier>{d339b24d-137e-4a90-9e6c-91906d3c6a50}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="KlinKlang\externals\imgui\imconfig.h">
@@ -148,8 +154,29 @@
     <ClInclude Include="KlinKlang\utils\KlangFormat.h">
       <Filter>KlinKlang\Utils</Filter>
     </ClInclude>
-    <ClInclude Include="KlinKlang\modules\Patcher.h">
-      <Filter>KlinKlang\Modules\Engine</Filter>
+    <ClInclude Include="KlinKlang\modules\ItemSearch.h">
+      <Filter>KlinKlang\Modules\Items</Filter>
+    </ClInclude>
+    <ClInclude Include="KlinKlang\data\ItemData.h">
+      <Filter>KlinKlang\Data</Filter>
+    </ClInclude>
+    <ClInclude Include="KlinKlang\modules\Item.h">
+      <Filter>KlinKlang\Modules\Items</Filter>
+    </ClInclude>
+    <ClInclude Include="KlinKlang\modules\ItemText.h">
+      <Filter>KlinKlang\Modules\Items</Filter>
+    </ClInclude>
+    <ClInclude Include="KlinKlang\data\MoveData.h">
+      <Filter>KlinKlang\Data</Filter>
+    </ClInclude>
+    <ClInclude Include="KlinKlang\modules\MoveSearch.h">
+      <Filter>KlinKlang\Modules\Moves</Filter>
+    </ClInclude>
+    <ClInclude Include="KlinKlang\modules\Move.h">
+      <Filter>KlinKlang\Modules\Moves</Filter>
+    </ClInclude>
+    <ClInclude Include="KlinKlang\modules\MoveText.h">
+      <Filter>KlinKlang\Modules\Moves</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -258,8 +285,29 @@
     <ClCompile Include="KlinKlang\utils\KlangFormat.cpp">
       <Filter>KlinKlang\Utils</Filter>
     </ClCompile>
-    <ClCompile Include="KlinKlang\modules\Patcher.cpp">
-      <Filter>KlinKlang\Modules\Engine</Filter>
+    <ClCompile Include="KlinKlang\modules\ItemSearch.cpp">
+      <Filter>KlinKlang\Modules\Items</Filter>
+    </ClCompile>
+    <ClCompile Include="KlinKlang\data\ItemData.cpp">
+      <Filter>KlinKlang\Data</Filter>
+    </ClCompile>
+    <ClCompile Include="KlinKlang\modules\Item.cpp">
+      <Filter>KlinKlang\Modules\Items</Filter>
+    </ClCompile>
+    <ClCompile Include="KlinKlang\modules\ItemText.cpp">
+      <Filter>KlinKlang\Modules\Items</Filter>
+    </ClCompile>
+    <ClCompile Include="KlinKlang\data\MoveData.cpp">
+      <Filter>KlinKlang\Data</Filter>
+    </ClCompile>
+    <ClCompile Include="KlinKlang\modules\MoveSearch.cpp">
+      <Filter>KlinKlang\Modules\Moves</Filter>
+    </ClCompile>
+    <ClCompile Include="KlinKlang\modules\Move.cpp">
+      <Filter>KlinKlang\Modules\Moves</Filter>
+    </ClCompile>
+    <ClCompile Include="KlinKlang\modules\MoveText.cpp">
+      <Filter>KlinKlang\Modules\Moves</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

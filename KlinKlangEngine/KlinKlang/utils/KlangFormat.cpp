@@ -9,7 +9,7 @@
 
 bool IsSeparator(char c)
 {
-	char separators[3] = { ' ', '\t', '\n'};
+	char separators[3] = { ' ', '\t', '\n' };
 	for (u32 idx = 0; idx < 3u; ++idx)
 		if (c == separators[idx])
 			return true;
@@ -34,7 +34,7 @@ u32 GetIndentation(const string& str)
 	}
 	return indentation;
 }
-bool IsNumber(char c)
+bool KlangIsNumber(char c)
 {
 	char numbers[] = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '-' };
 	for (u32 idx = 0; idx < 11u; ++idx)
@@ -72,11 +72,11 @@ bool KlangVar::SetValue(int value)
 			this->value = value;
 
 			for (start += (int)this->name.length(); start < (int)lineStr.length(); ++start)
-				if (IsNumber(lineStr[start]))
+				if (KlangIsNumber(lineStr[start]))
 					break;
 			int end = start + 1;
 			for (; end < (int)lineStr.length(); ++end)
-				if (!IsNumber(lineStr[end]))
+				if (!KlangIsNumber(lineStr[end]))
 					break;
 
 			lineStr.erase(start, end - start);
@@ -172,7 +172,7 @@ KlangVar Klang::GetKlangVar(const string& line, u32 offset)
 			else
 				break;
 		}
-		if (!IsNumber(line[idx]))
+		if (!KlangIsNumber(line[idx]))
 			break;
 		value.push_back(line[idx]);
 	}

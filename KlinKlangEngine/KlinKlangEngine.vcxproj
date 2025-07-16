@@ -21,7 +21,9 @@
   <ItemGroup>
     <ClInclude Include="KlinKlang\data\ChildData.h" />
     <ClInclude Include="KlinKlang\data\EvolutionData.h" />
+    <ClInclude Include="KlinKlang\data\ItemData.h" />
     <ClInclude Include="KlinKlang\data\LearnsetData.h" />
+    <ClInclude Include="KlinKlang\data\MoveData.h" />
     <ClInclude Include="KlinKlang\data\PersonalData.h" />
     <ClInclude Include="KlinKlang\data\Pokemon.h" />
     <ClInclude Include="KlinKlang\data\Project.h" />
@@ -40,10 +42,15 @@
     <ClInclude Include="KlinKlang\Log.h" />
     <ClInclude Include="KlinKlang\modules\Child.h" />
     <ClInclude Include="KlinKlang\modules\Evolution.h" />
+    <ClInclude Include="KlinKlang\modules\Item.h" />
+    <ClInclude Include="KlinKlang\modules\ItemSearch.h" />
+    <ClInclude Include="KlinKlang\modules\ItemText.h" />
     <ClInclude Include="KlinKlang\modules\Learnset.h" />
     <ClInclude Include="KlinKlang\modules\MenuBar.h" />
     <ClInclude Include="KlinKlang\modules\Module.h" />
-    <ClInclude Include="KlinKlang\modules\Patcher.h" />
+    <ClInclude Include="KlinKlang\modules\Move.h" />
+    <ClInclude Include="KlinKlang\modules\MoveSearch.h" />
+    <ClInclude Include="KlinKlang\modules\MoveText.h" />
     <ClInclude Include="KlinKlang\modules\Personal.h" />
     <ClInclude Include="KlinKlang\modules\PokemonForm.h" />
     <ClInclude Include="KlinKlang\modules\PokemonSearch.h" />
@@ -61,7 +68,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="KlinKlang\data\EvolutionData.cpp" />
+    <ClCompile Include="KlinKlang\data\ItemData.cpp" />
     <ClCompile Include="KlinKlang\data\LearnsetData.cpp" />
+    <ClCompile Include="KlinKlang\data\MoveData.cpp" />
     <ClCompile Include="KlinKlang\data\PersonalData.cpp" />
     <ClCompile Include="KlinKlang\data\Pokemon.cpp" />
     <ClCompile Include="KlinKlang\data\Project.cpp" />
@@ -78,10 +87,15 @@
     <ClCompile Include="KlinKlang\Log.cpp" />
     <ClCompile Include="KlinKlang\modules\Child.cpp" />
     <ClCompile Include="KlinKlang\modules\Evolution.cpp" />
+    <ClCompile Include="KlinKlang\modules\Item.cpp" />
+    <ClCompile Include="KlinKlang\modules\ItemSearch.cpp" />
+    <ClCompile Include="KlinKlang\modules\ItemText.cpp" />
     <ClCompile Include="KlinKlang\modules\Learnset.cpp" />
     <ClCompile Include="KlinKlang\modules\MenuBar.cpp" />
     <ClCompile Include="KlinKlang\modules\Module.cpp" />
-    <ClCompile Include="KlinKlang\modules\Patcher.cpp" />
+    <ClCompile Include="KlinKlang\modules\Move.cpp" />
+    <ClCompile Include="KlinKlang\modules\MoveSearch.cpp" />
+    <ClCompile Include="KlinKlang\modules\MoveText.cpp" />
     <ClCompile Include="KlinKlang\modules\Personal.cpp" />
     <ClCompile Include="KlinKlang\modules\PokemonForm.cpp" />
     <ClCompile Include="KlinKlang\modules\PokemonSearch.cpp" />

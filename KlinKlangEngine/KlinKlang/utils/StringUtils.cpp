@@ -510,10 +510,29 @@ vector<u32> StringToU32Vector(const string& input, char separator)
     return output;
 }
 
+#include <locale>
+
 string LowerCase(const string& input)
 {
     string output;
     for (u32 idx = 0; idx < (u32)input.size(); ++idx)
-        output.push_back(tolower(input[idx]));
+        output.push_back(std::tolower(input[idx]));
     return output;
+}
+
+string UpperCase(const string& input)
+{
+    string output;
+    for (u32 idx = 0; idx < (u32)input.size(); ++idx)
+        output.push_back(std::toupper(input[idx]));
+    return output;
+}
+
+char numbers[10] = { '0','1','2','3','4','5','6','7','8','9' };
+bool IsNumber(char character)
+{
+    for (u8 i = 0; i < 10; ++i)
+        if (character == numbers[i])
+            return true;
+    return false;
 }

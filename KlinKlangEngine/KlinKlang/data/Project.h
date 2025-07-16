@@ -33,6 +33,10 @@ struct Project
 	u32 selectedPkmForm = DEFAULT_SELECTED_PKM_FORM;
 	u32 showPokeStudio = DEFAULT_SHOW_POKESTUDIO;
 
+	u32 selectedItemIdx = DEFAULT_SELECTED_ITEM_IDX;
+
+	u32 selectedMoveIdx = DEFAULT_SELECTED_MOVE_IDX;
+
 	u32 maxEvents = DEFAULT_MAX_EVENTS;
 
 	string compilerPath = DEFAULT_COMPILER_PATH;

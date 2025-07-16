@@ -65,7 +65,7 @@ ReturnState Evolution::RenderGUI()
 		case EVOLVE_LEVELUP_ITEM_HELD_NIGHT:
 		case EVOLVE_ITEM_USE_M:
 		case EVOLVE_ITEM_USE_F:
-			ComboBox(evolution, paramLabel.c_str(), engine->items, evoIdx, EVOLUTION_PARAM);
+			ComboBox(evolution, paramLabel.c_str(), engine->itemNames, evoIdx, EVOLUTION_PARAM);
 			break;
 		// Beauty
 		case EVOLVE_LEVELUP_BEAUTY:
@@ -183,6 +183,9 @@ void Evolution::HandleSaveEvent(Event* saveEvent)
 void Evolution::ComboBox(EvolutionData& evolution, const char* label, const std::vector<std::string>& items, u32 idx, EvolutionField field)
 {
 	int selected = evolution[idx][field];
+	if (selected >= items.size())
+		selected = 0;
+
 	ImGui::SetNextItemWidth(150.0f);
 	if (ImGui::TextInputComboBox(label, items, &selected))
 	{

@@ -68,6 +68,10 @@ ReturnState LoadProjectSettings(Project& project, const string& name)
 	GetKlinValueU32(klin, KLIN_SELECTED_PKM_FORM, project.selectedPkmForm);
 	GetKlinValueU32(klin, KLIN_SEARCH_POKESTUDIO, project.showPokeStudio);
 
+	GetKlinValueU32(klin, KLIN_SELECTED_ITEM_IDX, project.selectedItemIdx);
+
+	GetKlinValueU32(klin, KLIN_SELECTED_MOVE_IDX, project.selectedMoveIdx);
+	
 	GetKlinValueU32(klin, KLIN_MAX_EVENTS, project.maxEvents);
 
 	GetKlinValueString(klin, KLIN_COMPILER_PATH, project.compilerPath);
@@ -100,54 +104,37 @@ ReturnState SaveProjectSettings(const Project& project)
 	SetKlinValueString(klin, KLIN_CTRMAP_PROJECT_PATH, project.ctrMapProjectPath);
 	SetKlinValueString(klin, KLIN_ROM_PATH, project.romPath);
 
-	if (project.width != DEFAULT_WINDOW_WIDTH)
-		SetKlinValueU32(klin, KLIN_WINDOW_WIDTH, project.width);
-	if (project.height != DEFAULT_WINDOW_HEIGHT)
-		SetKlinValueU32(klin, KLIN_WINDOW_HEIGHT, project.height);
-	if (project.font != DEFAULT_FONT)
-		SetKlinValueString(klin, KLIN_FONT, project.font);
-	if (project.fontSize != DEFAULT_FONT_SIZE)
-		SetKlinValueU32(klin, KLIN_FONT_SIZE, project.fontSize);
+	SetKlinValueU32(klin, KLIN_WINDOW_WIDTH, project.width);
+	SetKlinValueU32(klin, KLIN_WINDOW_HEIGHT, project.height);
+	SetKlinValueString(klin, KLIN_FONT, project.font);
+	SetKlinValueU32(klin, KLIN_FONT_SIZE, project.fontSize);
 
-	if (project.learnsetSize != DEFAULT_LEARNSET_SIZE)
-		SetKlinValueU32(klin, KLIN_LEARNSET_SIZE, project.learnsetSize);
-	if (project.evolutionSize != DEFAULT_EVOLUTION_SIZE)
-		SetKlinValueU32(klin, KLIN_EVOLUTION_SIZE, project.evolutionSize);
-	if (project.pokemonCount != DEFAULT_POKEMON_COUNT)
-		SetKlinValueU32(klin, KLIN_POKEMON_COUNT, project.pokemonCount);
-	if (project.typeCount != DEFAULT_TYPE_COUNT)
-		SetKlinValueU32(klin, KLIN_TYPE_COUNT, project.typeCount);
+	SetKlinValueU32(klin, KLIN_LEARNSET_SIZE, project.learnsetSize);
+	SetKlinValueU32(klin, KLIN_EVOLUTION_SIZE, project.evolutionSize);
+	SetKlinValueU32(klin, KLIN_POKEMON_COUNT, project.pokemonCount);
+	SetKlinValueU32(klin, KLIN_TYPE_COUNT, project.typeCount);
 
-	if (project.group != DEFAULT_GROUP)
-		SetKlinValueU32(klin, KLIN_GROUP, project.group);
+	SetKlinValueU32(klin, KLIN_GROUP, project.group);
 
-	if (project.selectedPkmIdx != DEFAULT_SELECTED_PKM_IDX)
-		SetKlinValueU32(klin, KLIN_SELECTED_PKM_IDX, project.selectedPkmIdx);
-	if (project.selectedPkmForm != DEFAULT_SELECTED_PKM_FORM)
-		SetKlinValueU32(klin, KLIN_SELECTED_PKM_FORM, project.selectedPkmForm);
-	if (project.showPokeStudio != DEFAULT_SHOW_POKESTUDIO)
-		SetKlinValueU32(klin, KLIN_SEARCH_POKESTUDIO, project.showPokeStudio);
+	SetKlinValueU32(klin, KLIN_SELECTED_PKM_IDX, project.selectedPkmIdx);
+	SetKlinValueU32(klin, KLIN_SELECTED_PKM_FORM, project.selectedPkmForm);
+	SetKlinValueU32(klin, KLIN_SEARCH_POKESTUDIO, project.showPokeStudio);
 
-	if (project.maxEvents != DEFAULT_MAX_EVENTS)
-		SetKlinValueU32(klin, KLIN_MAX_EVENTS, project.maxEvents);
+	SetKlinValueU32(klin, KLIN_SELECTED_ITEM_IDX, project.selectedItemIdx);
 
-	if (project.compilerPath != DEFAULT_COMPILER_PATH)
-		SetKlinValueString(klin, KLIN_COMPILER_PATH, project.compilerPath);
-	if (project.javaPath != DEFAULT_JAVA_PATH)
-		SetKlinValueString(klin, KLIN_JAVA_PATH, project.javaPath);
-	if (project.ctrMapPath != DEFAULT_CTRMAP_PATH)
-		SetKlinValueString(klin, KLIN_CTRMAP_PATH, project.ctrMapPath);
-	if (project.extLibPath != DEFAULT_EXTLIB_PATH)
-		SetKlinValueString(klin, KLIN_EXTLIB_PATH, project.extLibPath);
-	if (project.libRPMPath != DEFAULT_LIBRPM_PATH)
-		SetKlinValueString(klin, KLIN_LIBRPM_PATH, project.libRPMPath);
-	if (project.nkPath != DEFAULT_NK_PATH)
-		SetKlinValueString(klin, KLIN_NK_PATH, project.nkPath);
-	if (project.swanPath != DEFAULT_SWAN_PATH)
-		SetKlinValueString(klin, KLIN_SWAN_PATH, project.swanPath);
+	SetKlinValueU32(klin, KLIN_SELECTED_MOVE_IDX, project.selectedMoveIdx);
 
-	if (project.enabledPatches.size())
-		SetKlinListString(klin, KLIN_ENABLED_PATCHES, project.enabledPatches);
+	SetKlinValueU32(klin, KLIN_MAX_EVENTS, project.maxEvents);
+
+	SetKlinValueString(klin, KLIN_COMPILER_PATH, project.compilerPath);
+	SetKlinValueString(klin, KLIN_JAVA_PATH, project.javaPath);
+	SetKlinValueString(klin, KLIN_CTRMAP_PATH, project.ctrMapPath);
+	SetKlinValueString(klin, KLIN_EXTLIB_PATH, project.extLibPath);
+	SetKlinValueString(klin, KLIN_LIBRPM_PATH, project.libRPMPath);
+	SetKlinValueString(klin, KLIN_NK_PATH, project.nkPath);
+	SetKlinValueString(klin, KLIN_SWAN_PATH, project.swanPath);
+
+	SetKlinListString(klin, KLIN_ENABLED_PATCHES, project.enabledPatches);
 
 	SaveKlin(klin, project.settingsPath, true);
 	return OK;

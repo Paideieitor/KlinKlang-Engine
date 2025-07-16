@@ -52,6 +52,8 @@ enum KlinValue : u32
 	KLIN_NK_PATH,
 	KLIN_SWAN_PATH,
 	KLIN_ENABLED_PATCHES,
+	KLIN_SELECTED_ITEM_IDX,
+	KLIN_SELECTED_MOVE_IDX,
 	KLIN_MAX_VALUE,
 };
 const KlinParam KlinParams[] = {
@@ -81,6 +83,8 @@ const KlinParam KlinParams[] = {
 	{"NitroKernel Path", KLIN_STRING},
 	{"SWAN Path", KLIN_STRING},
 	{"Enabled Patches", KLIN_STRING_LIST},
+	{"Selected Item Idx", KLIN_U32},
+	{"Selected Move Idx", KLIN_U32},
 };
 
 void LoadKlin(KlinHandler& handler, const string& path);

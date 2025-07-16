@@ -316,7 +316,8 @@ int NarcUnpackExclude(const string& path, const string& savePath, const vector<u
 	u8* exclude = new u8[narc.fileAllocTable.fileCount];
 	memset(exclude, 0, narc.fileAllocTable.fileCount);
 	for (u32 excludeIdx = 0; excludeIdx < excludeIDs.size(); ++excludeIdx)
-		exclude[excludeIDs[excludeIdx]] = 1;
+		if (excludeIDs[excludeIdx] < narc.fileAllocTable.fileCount)
+			exclude[excludeIDs[excludeIdx]] = 1;
 
 	for (u32 fileID = 0; fileID < narc.fileAllocTable.fileCount; ++fileID)
 	{

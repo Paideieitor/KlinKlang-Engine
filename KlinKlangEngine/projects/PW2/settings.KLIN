@@ -1,0 +1,27 @@
+Project Name: PW2
+Project Order: 0
+CTRMap Project Path: D:\Me\Smort\GitHub\PW2CTRMap\PW2
+ROM Path: D:\Me\Smort\GitHub\PW2CTRMap\IRDO
+Learnset Size: 26
+Evolution Size: 7
+Pokemon Count: 650
+Type Count: 17
+Window Width: 1920
+Window Height: 1017
+Selected Pokemon Idx: 277
+Selected Pokemon Form: 0
+Search PokeStudio: 0
+Font: fonts\default.ttf
+Font Size: 15
+Max Events: 2000
+Group: 1
+Compiler Path: 
+Java Path: 
+CTRMap Path: 
+ExtLib Path: 
+LibRPM Path: 
+NitroKernel Path: 
+SWAN Path: 
+Enabled Patches: 
+Selected Item Idx: 71
+Selected Move Idx: 560

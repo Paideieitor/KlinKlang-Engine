@@ -17,38 +17,21 @@ ReturnState MenuBar::RenderGUI()
 	if (ImGui::IsKeyReleased(ImGuiKey_LeftCtrl))
 		engine->commandInput = false;
 
-	if (engine->commandInput &&
-		ImGui::IsKeyPressed(ImGuiKey_S))
-		engine->Save();
+	if (engine->commandInput)
+	{
+		if (ImGui::IsKeyPressed(ImGuiKey_S))
+		{
+			engine->Save();
+			ImGui::Text("Saved");
+		}
 
-	if (engine->commandInput &&
-		ImGui::IsKeyPressed(ImGuiKey_Z))
-		engine->HandleReverseEvent();
+		if (ImGui::IsKeyPressed(ImGuiKey_Z))
+			engine->HandleReverseEvent();
 
-	if (engine->commandInput &&
-		ImGui::IsKeyPressed(ImGuiKey_1))
-		ChangeGroup(POKEMON_GROUP);
-	if (engine->commandInput &&
-		ImGui::IsKeyPressed(ImGuiKey_2))
-		ChangeGroup(MOVE_GROUP);
-	if (engine->commandInput &&
-		ImGui::IsKeyPressed(ImGuiKey_3))
-		ChangeGroup(ENCOUNTER_GROUP);
-	if (engine->commandInput &&
-		ImGui::IsKeyPressed(ImGuiKey_4))
-		ChangeGroup(TRAINER_GROUP);
-
-	if (engine->commandInput &&
-		ImGui::IsKeyPressed(ImGuiKey_B))
-		engine->BuildPatches();
-
-	if (engine->commandInput &&
-		ImGui::IsKeyPressed(ImGuiKey_N))
-		engine->patcherSettingsMenu = !engine->patcherSettingsMenu;
-
-	if (engine->commandInput &&
-		ImGui::IsKeyPressed(ImGuiKey_R))
-		engine->LoadPatches(true);
+		for (u32 group = POKEMON_GROUP; group <= TRAINER_GROUP; ++group)
+			if (ImGui::IsKeyPressed((ImGuiKey)(ImGuiKey_0 + group)))
+				ChangeGroup(group);
+	}
 
 	if (ImGui::BeginMainMenuBar())
 	{
@@ -67,17 +50,19 @@ ReturnState MenuBar::RenderGUI()
 		{
 			if (ImGui::MenuItem(u8"Pokémon", "Ctrl+1"))
 				ChangeGroup(POKEMON_GROUP);
-			if (ImGui::MenuItem("Moves", "Ctrl+2"))
+			if (ImGui::MenuItem("Items", "Ctrl+2"))
+				ChangeGroup(ITEM_GROUP);
+			if (ImGui::MenuItem("Moves", "Ctrl+3"))
 				ChangeGroup(MOVE_GROUP);
-			if (ImGui::MenuItem("Encounters", "Ctrl+3"))
+			if (ImGui::MenuItem("Encounters", "Ctrl+4"))
 				ChangeGroup(ENCOUNTER_GROUP);
-			if (ImGui::MenuItem("Trainers", "Ctrl+4"))
+			if (ImGui::MenuItem("Trainers", "Ctrl+5"))
 				ChangeGroup(TRAINER_GROUP);
 
 			ImGui::EndMenu();
 		}
 
-		ImGui::BeginDisabled(!engine->patchesEnabled);
+		/*ImGui::BeginDisabled(!engine->patchesEnabled);
 		if (ImGui::BeginMenu("Patcher"))
 		{
 			if (ImGui::MenuItem("Build", "Ctrl+B"))
@@ -104,7 +89,7 @@ ReturnState MenuBar::RenderGUI()
 
 			ImGui::EndMenu();
 		}
-		ImGui::EndDisabled();
+		ImGui::EndDisabled();*/
 
 		ImGui::EndMainMenuBar();
 	}

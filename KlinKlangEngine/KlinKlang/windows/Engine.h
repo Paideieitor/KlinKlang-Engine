@@ -11,6 +11,10 @@
 #include "LearnsetData.h"
 #include "EvolutionData.h"
 #include "ChildData.h"
+#include "ItemData.h"
+#include "MoveData.h"
+
+#include "FileUtils.h"
 
 class Module;
 
@@ -21,19 +25,9 @@ struct Event
 	void* value = nullptr;
 };
 
-struct Patch
-{
-	string name = "";
-	Klang settings = Klang();
-
-	bool enabled = false;
-	bool open = false;
-};
-
 class Engine : public Window
 {
 public:
-	bool expandedAbilities = true;
 
 	Engine() = delete;
 	Engine(Project* const project);
@@ -44,6 +38,9 @@ public:
 	string learnsetPath = string();
 	string evolutionPath = string();
 	string childPath = string();
+	string itemPath = string();
+	string movePath = string();
+	string moveAnimPath = string();
 
 	vector<Pokemon> pokemon = vector<Pokemon>();
 
@@ -57,9 +54,23 @@ public:
 	vector<EvolutionData> evolution = vector<EvolutionData>();
 	vector<ChildData> child = vector<ChildData>();
 
+	vector<ItemData> items = vector<ItemData>();
+
+	vector<string> itemNames = vector<string>();
+	vector<string> itemDescriptions = vector<string>();
+	vector<string> itemColors = vector<string>();
+	vector<string> itemPlurals = vector<string>();
+
+	vector<MoveData> moves = vector<MoveData>();
+	vector<FileStream> moveAnims = vector<FileStream>();
+
+	vector<string> moveNames = vector<string>();
+	vector<string> moveNamesMayus = vector<string>();
+	vector<string> moveUses = vector<string>();
+	vector<string> moveDescriptions = vector<string>();
+
 	vector<string> types = vector<string>();
 	vector<string> abilities = vector<string>();
-	vector<string> items = vector<string>();
 
 	vector<string> eggGroups = {
 		"None",
@@ -110,14 +121,92 @@ public:
 		"Level Up Ice Rock",
 		"Level Up Electric Cave 2",
 	};
-
-	vector<string> moveNames = vector<string>();
-	vector<string> moveDescriptions = vector<string>();
-
-	vector<Patch> patches = vector<Patch>();
-	u32 patchesModuleIdx = 0;
-	bool patcherSettingsMenu = false;
-	bool patchesEnabled = false;
+	vector<string> stats = {
+		"Null",
+		"Attack",
+		"Defense",
+		"Sp.Attack",
+		"Sp.Defense",
+		"Speed",
+		"Accuracy",
+		"Evasion",
+	};
+	vector<string> moveQuality = {
+		"Damage",
+		"Condition",
+		"Stat change",
+		"Heal",
+		"Damage + Condition",
+		"Condition + Stat change",
+		"Damage + Stat change",
+		"Damage + Self stat change",
+		"Damage + Heal",
+		"OHKO",
+		"Field effect",
+		"Side effect",
+		"Force switch",
+		"Uncategorized",
+	};
+	vector<string> moveCategory = {
+		"Status",
+		"Physical",
+		"Special",
+	};
+	vector<string> moveTarget = {
+		"Select Other",
+		"Select Ally or User",
+		"Select Ally",
+		"Select Enemy",
+		"All Other",
+		"All Enemies",
+		"All Allies",
+		"User",
+		"All",
+		"Random Enemy",
+		"Field",
+		"Enemy Side",
+		"Ally Side",
+		"Unknown",
+	};
+	vector<string> conditions = {
+		"None",
+		"Paralysis",
+		"Sleep",
+		"Freeze",
+		"Burn",
+		"Poison",
+		"Confusion",
+		"Attract",
+		"Bind",
+		"Nightmare",
+		"Curse",
+		"Taunt",
+		"Torment",
+		"Disable",
+		"Yawn",
+		"Healblock",
+		"Gastroacid",
+		"Foresight",
+		"Leechseed",
+		"Embargo",
+		"Perishsong",
+		"Ingrain",
+		"Block",
+		"Encore",
+		"Roost",
+		"Movelock",
+		"Chargelock",
+		"Choicelock",
+		"Must Hit",
+		"Lock-on",
+		"Floating",
+		"Knocked Down",
+		"Telekinesis",
+		"Skydrop",
+		"Accuracy Up",
+		"Aqua Ring",
+		"All",
+	};
 
 	bool commandInput = false;
 
@@ -159,13 +248,22 @@ public:
 	bool SaveLearnset(const LearnsetData& learnData, const string& file);
 	bool SaveEvolution(const EvolutionData& evoData, const string& file);
 	bool SaveChild(const ChildData& childData, const string& file);
+	bool SaveItem(const ItemData& itemData, const string& file);
+	bool SaveMove(const MoveData& moveData, const string& file);
 	void Save();
+
+	void SendGroupEvent(u32 group);
 
 	void SetCurrentPokemon(u32 idx, u32 form);
 	Pokemon* GetCurrentPokemon() { return currentPkm; }
 
-	void LoadPatches(bool reload);
-	void BuildPatches();
+	void SetCurrentItem(u32 idx);
+	ItemData* GetCurrentItem() { return currentItem; }
+
+	void SetCurrentMove(u32 idx);
+	MoveData* GetCurrentMove() { return currentMove; }
+
+	void AddMove();
 
 protected:
 
@@ -176,12 +274,17 @@ private:
 	bool LoadTextFiles();
 	u32 LoadDataNarc(const string& narcPath, string& outputPath);
 	bool LoadPokemon(Pokemon& pkm);
+	bool LoadPokemonData();
+	bool LoadItemData();
+	bool LoadMoveData();
 	bool Start();
 
 	bool LoadPersonal(PersonalData& personalData, const string& file);
 	bool LoadLearnset(LearnsetData& learnData, const string& file);
 	bool LoadEvolution(EvolutionData& evoData, const string& file);
 	bool LoadChild(ChildData& childData, const string& file);
+	bool LoadItem(ItemData& itemData, const string& file);
+	bool LoadMove(MoveData& moveData, const string& file);
 
 	void SaveEnabledPatches();
 
@@ -190,6 +293,8 @@ private:
 	vector<Event> saveEvents = vector<Event>();
 
 	Pokemon* currentPkm = nullptr;
+	ItemData* currentItem = nullptr;
+	MoveData* currentMove = nullptr;
 
 	friend class Module;
 };
@@ -201,7 +306,7 @@ private:
 #define KLANG_PATH "source\\settings.h"
 
 #define TEXT_NARC_PATH "0\\0\\2"
-	#define PKM_NAME_FILE_ID 90
+#define PKM_NAME_FILE_ID 90
 	#define PKM_FORM_NAME_FILE_ID 450
 	#define PKM_NAME_COLOR_FILE_ID 483
 	#define PKM_NAME_MAYUS_FILE_ID 486
@@ -214,12 +319,17 @@ private:
 #define TYPE_NAME_FILE_ID 398
 #define ABILITY_NAME_FILE_ID 374
 #define ITEM_NAME_FILE_ID 64
+	#define ITEM_DESCRIPTION_FILE_ID 63
+	#define ITEM_NAME_COLOR_FILE_ID 481
+	#define ITEM_NAME_PLURAL_FILE_ID 482
 
 #define PERSONAL_NARC_PATH "0\\1\\6"
 #define LEARNSET_NARC_PATH "0\\1\\8"
 #define EVOLUTION_NARC_PATH "0\\1\\9"
 #define CHILD_NARC_PATH "0\\2\\0"
 #define MOVE_NARC_PATH "0\\2\\1"
+#define ITEM_NARC_PATH "0\\2\\4"
+#define MOVE_ANIM_NARC_PATH "0\\6\\5"
 
 #define SEARCH_TEXT_SIZE 64
 
